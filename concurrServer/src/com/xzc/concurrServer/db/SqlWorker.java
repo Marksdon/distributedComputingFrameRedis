@@ -21,7 +21,7 @@ public class SqlWorker {
 	 * @param conn 数据库连接
 	 * @return 数据库源数据
 	 */
-	public static List<Blogger> getDataSource(Connection conn) {
+	public static List<Blogger> getDateSource(Connection conn) {
 
 //		String sql = "SELECT `BlogID`,`UID`,`Transmits` FROM `weibo` WHERE `Status` = 0";
 		String sql = "SELECT `BlogID`,`UID`,`Transmits` FROM `weibo` limit 5";
@@ -43,9 +43,9 @@ public class SqlWorker {
 				blogger.setUid(uid);
 				blogger.setTransmits(transmits);
 				list.add(blogger);
-				ps1 = conn.prepareStatement("update weibo set Status=1 where BlogID=?");
+				/*ps1 = conn.prepareStatement("update weibo set Status=1 where BlogID=?");
 				ps1.setObject(1, blogId);
-				ps1.executeUpdate();
+				ps1.executeUpdate();*/
 				System.out.println("got a BlogID :--" + new Date());
 			}
 		} catch (SQLException e) {
