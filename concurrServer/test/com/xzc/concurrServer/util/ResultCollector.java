@@ -1,11 +1,15 @@
 package com.xzc.concurrServer.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.validator.PublicClassValidator;
 
 import com.xzc.concurr.pojo.Result;
+import com.xzc.concurr.result.ResultRegistor;
 
 public class ResultCollector {
 
@@ -34,7 +38,6 @@ public class ResultCollector {
 	 * 	if ((successNum + fail) == sum) mission done
 	 */
 
-	
 	private String collecteResult(Result result){
 		String key = result.getResultId();
 		if (map.containsKey(key)) {
@@ -95,31 +98,64 @@ public class ResultCollector {
 	}
 
 
-	
-	
 	/**
-	 * 内存变量地址没有变，堆里对象属性变化而已
+	 * 收集回来的数据要到一个map集合中报到
+	 * @param map Map<String, ResultRegistor> map的一个对象
+	 * @param result 收集回来的result对象
+	 * @return 登记后的map对象
 	 */
-	@Test
-	public void testMapValue(){
-		Result result = new Result();
-		Map<String, ResultCollector> map = new HashMap<>();
-		ResultCollector rc = new ResultCollector();
-		rc.failNum = 4;
-		rc.successNum = 5;
-		map.put("key0", rc);
+	public Map<String, ResultRegistor> registryResult(
+			Map<String, ResultRegistor> map, Result result){
 
-		if (map.containsKey("key0")) {
-			ResultCollector resultCollector = map.get("key0");
-			resultCollector.failNum ++;
+		String resultId = result.getResultId();
+
+		if (map.containsKey(resultId)) {
+			ResultRegistor rr = map.get(resultId);
+			if (result.isFlag()) {
+				rr.setSuccessNum(rr.getSuccessNum()+1);
+				//汇总工作
+			} else {
+				rr.setFailNum(rr.getFailNum()+1);
+			}
+		} else {
+			ResultRegistor registor = new ResultRegistor();
+			registor.setResultObj(resultId);
+			registor.setTotalNum(result.getSumResult());
+			if (result.isFlag()) {
+				registor.setSuccessNum(1);
+			} else {
+				registor.setFailNum(1);
+			}
+			map.put(resultId, registor);
 		}
-
-		ResultCollector resultCollector = map.get("key0");
-		System.out.println(resultCollector.failNum 
-				+ "|" + resultCollector.successNum);
+		return map;
 
 	}
+	
+	
 
+	/**
+	 * 检查map中是否已经得到
+	 * @param map
+	 * @return
+	 */
+	public Object getDone(Map<String, ResultRegistor> map){
+		int failNum = 0;
+		int successNum = 0;
+		int totalNum = 0;
+		List<Object> list = new ArrayList<>();
+		for(Map.Entry<String, ResultRegistor> entry: map.entrySet()){
+			ResultRegistor registor = entry.getValue();
+			failNum = registor.getFailNum();
+			successNum = registor.getSuccessNum();
+			totalNum = registor.getTotalNum();
+			if ((failNum + successNum) == totalNum) {
+				list.add(entry.getKey());
+				map.remove(entry.getKey());
+			}
+		}
+		return list;
+	}
 
 
 }
