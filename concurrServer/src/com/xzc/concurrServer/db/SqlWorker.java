@@ -37,7 +37,7 @@ public class SqlWorker {
 				//get data
 				String blogId = rs.getString("BlogID");
 				String uid = rs.getString("UID");
-				String transmits = rs.getString("Transmits");
+				int transmits = rs.getInt("Transmits");
 				Blogger blogger = new Blogger();
 				blogger.setBlogId(blogId);
 				blogger.setUid(uid);

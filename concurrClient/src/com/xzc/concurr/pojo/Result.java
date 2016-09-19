@@ -4,14 +4,14 @@ import java.io.Serializable;
 
 public class Result implements Serializable{
 	private static final long serialVersionUID = 1L;
-	private int resultId; //结果号
+	private String resultId; //结果号
 	private int iResult;  //第i个结果
 	private int sumResult;//总的结果
 	private boolean flag; //结果状态，false表示任务完成，true任务失败
-	public int getResultId() {
+	public String getResultId() {
 		return resultId;
 	}
-	public void setResultId(int resultId) {
+	public void setResultId(String resultId) {
 		this.resultId = resultId;
 	}
 	public int getiResult() {
@@ -32,5 +32,7 @@ public class Result implements Serializable{
 	public void setFlag(boolean flag) {
 		this.flag = flag;
 	}
+
+	
 	
 }

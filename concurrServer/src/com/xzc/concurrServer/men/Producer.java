@@ -1,11 +1,16 @@
 package com.xzc.concurrServer.men;
 
+import java.sql.Connection;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.xzc.concurr.interfaces.Producable;
 import com.xzc.concurr.pojo.Task;
+import com.xzc.concurr.pojo.Blogger;
+import com.xzc.concurrServer.db.ConnectionPool;
+import com.xzc.concurrServer.db.SqlWorker;
 import com.xzc.concurrServer.util.RedisUtilSyn;
 import com.xzc.concurrServer.util.SerializeUtil;
 
@@ -19,28 +24,37 @@ public class Producer implements Producable {
 	@Override
 	public void run() {
 		System.out.println("count's initial value : " + count.intValue());
-		while (true) {
-			//获得数据
-			//List<String> sourceList = getDateSource();
-			//假设数据在sourceList
-			List<String> sourceList = new ArrayList<>();
-			sourceList.add("123456");//测试数据 
 
-			for (String taskObjId : sourceList) {
-				//设置任务对象属性
-				List<Task> taskList = setTasks(taskObjId);
-				//分配任务
-				//				assignTasks(taskList);
-				assignTasksTestNotNullJedis(taskList);
-			}
-			//任务分配完成后，呼叫GC清空一下sourceList里面的对象
-			sourceList.clear();
-			System.err.println("sourceList is empty: " + sourceList.isEmpty());
+		ConnectionPool pool = null;
+		while (true) {
 			try {
+				//初始化连接池
+				pool =  ConnectionPool.getInstance();
+				Connection conn = pool.getConnection();
+				//获得数据
+				List<Blogger> sourceList = SqlWorker.getDateSource(conn);
+				pool.release(conn);//返还conn回连接池
+
+				for (Blogger taskObj : sourceList) {
+					//设置任务对象属性
+					List<Task> taskList = setTasks(taskObj);
+					//分配任务
+					//assignTasks(taskList);
+					assignTasksTestNotNullJedis(taskList);
+				}
+				//任务分配完成后，呼叫GC清空一下sourceList里面的对象
+				sourceList.clear();
+				System.out.println("sourceList is empty: " + sourceList.isEmpty());
+				
 				//线程沉睡30分钟
 				Thread.sleep(1800000);
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
+				//logger
+			} finally {
+				if (pool != null) {
+					pool.closePool();
+				}
 			}
 
 		}
@@ -131,9 +145,11 @@ public class Producer implements Producable {
 	 */
 	public List<Task> setTasks(Object obj){
 		//获得总任务数,假设是m
-		int m = 10; //假设的总任务数
+		/*int m = 10;*/ //假设的总任务数
+		Blogger blogger = (Blogger)obj;
+		int m = blogger.getTransmits();
 		List<Task> list = new ArrayList<>();
-		for(int i = 0; i < m; i ++){
+		for(int i = 1; i <= m; i ++){
 			Task task = new Task();
 			task.setObj(obj);
 			task.setiTask(i);
@@ -175,6 +191,5 @@ public class Producer implements Producable {
 		}
 		return list;
 	} 
-
 
 }

@@ -1,0 +1,38 @@
+package com.xzc.concurrServer.util;
+
+import com.xzc.concurr.pojo.Result;
+import com.xzc.concurr.pojo.Task;
+
+import redis.clients.jedis.Jedis;
+
+public class RedisClearer {
+
+	public static void main(String[] args) {
+		Result result;
+		Task task;
+		Jedis jedis = null;
+		while (true) {
+			try {
+				jedis = RedisUtilSyn.getJedis(1);
+				byte[] barr = jedis.lpop("taskQueueTest".getBytes());
+				if (barr == null) {
+					System.out.println("barr is null on resultQueueTest");
+				} else {
+//					result = (Result)SerializeUtil.unserialize(barr);
+					task = (Task)SerializeUtil.unserialize(barr);
+//					System.out.println(
+//							result.getResultId() + "|" + result.getiResult());
+					System.out.println(
+							task.getiTask() + "|" + task.getSumTask());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (jedis != null) {
+					RedisUtilSyn.returnResource(jedis);
+				}
+			}
+
+		}
+	}
+}

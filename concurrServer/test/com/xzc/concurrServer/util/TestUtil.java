@@ -39,7 +39,7 @@ public class TestUtil {
 	public static Blogger countBlogger(Blogger blogger) {
 		blogger.setBlogId("mission completed");
 		blogger.setUid("Congra");
-		blogger.setTransmits("0");
+		blogger.setTransmits(0);
 		return blogger;
 	}
 

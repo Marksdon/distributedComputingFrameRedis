@@ -13,7 +13,6 @@ import com.mysql.jdbc.Statement;
  * 包括获得数据库链接，关闭数据库结果集，关闭数据库会话等方法
  */
 public class JDBCUtil {
-
 	private static String url;
 	public JDBCUtil(String inUrl) {
 		url = inUrl;

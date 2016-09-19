@@ -55,7 +55,7 @@ public class Consumer implements Runnable{
 	 */
 	public Result countSucessTask(Task task){
 		Result result = new Result();
-		result.setResultId(task.getiTask());
+		result.setResultId(task.getTaskObjId()+"");
 		result.setiResult(task.getiTask());
 		result.setSumResult(task.getSumTask());
 		result.setFlag(true);
@@ -70,7 +70,7 @@ public class Consumer implements Runnable{
 	 */
 	public Result countFailTask(Task task){
 		Result result = new Result();
-		result.setResultId(task.getiTask());
+		result.setResultId(task.getTaskObjId()+"");
 		result.setiResult(task.getiTask());
 		result.setSumResult(task.getSumTask());
 		result.setFlag(false);
