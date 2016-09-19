@@ -2,7 +2,7 @@ package com.xzc.concurrServer.util;
 
 public class SqlConfig {
 	
-	public static final String DBADDR2 = "27.17.18.131:38191/urun_opinion_gz_blog";
+	public static final String DBADDR2 = "**.**.**.***:****/urun_opinion_gz_blog";
 	public static final String USER2 = "***";
 	public static final String PASSWORD2 = "****";
 	public static final String url = "jdbc:mysql://"+DBADDR2+"?"
