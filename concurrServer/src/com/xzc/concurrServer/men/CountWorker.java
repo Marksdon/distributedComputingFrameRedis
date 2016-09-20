@@ -1,7 +1,7 @@
 package com.xzc.concurrServer.men;
 
-import com.xzc.concurr.pojo.Blogger;
 import com.xzc.concurr.pojo.Result;
+import com.xzc.concurr.pojo.Task;
 import com.xzc.concurrServer.util.CountUtil;
 
 /**
@@ -16,7 +16,6 @@ public class CountWorker {
 	 * 1.翻页请求数据
 	 * 2.单页解析数据
 	 * 3.封装成为对象--一个博主一个对象
-	 * 
 	 */
 	
 	/**
@@ -24,12 +23,11 @@ public class CountWorker {
 	 * @param blogger 传进来的blogger对象
 	 * @return result 计算完成后的Result对象
 	 */
-	public static Result count(Blogger blogger){
+	public static Result count(Task task){
 		//count detail
 		
 		/**
 		 * 类型,微博分析(1-转发评论数，2-用户类型，3-表情，4-认证类型，5-关键词)
-		 * 
 		 * 1.基本类型对象--baseAnalysis
 		 * 2.转发对象 --transmitDetail
 		 * 前面两个对象组合为一个对象 result
@@ -55,7 +53,6 @@ public class CountWorker {
 		//转发评论
 		cu.parseTranCom(text, date, map);*/
 		//
-		
 		//转化为对象
 
 		return null;

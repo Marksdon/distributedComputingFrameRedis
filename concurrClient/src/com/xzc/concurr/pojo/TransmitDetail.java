@@ -1,6 +1,10 @@
 package com.xzc.concurr.pojo;
 
-public class TransmitDetail {
+import java.io.Serializable;
+
+public class TransmitDetail implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 	private String analysisBlogId;
 	private int levelId;
 	private String uid;

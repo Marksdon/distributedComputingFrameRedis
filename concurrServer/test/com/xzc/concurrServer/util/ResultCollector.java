@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.validator.PublicClassValidator;
-
 import com.xzc.concurr.pojo.Result;
 import com.xzc.concurr.result.ResultRegistor;
 

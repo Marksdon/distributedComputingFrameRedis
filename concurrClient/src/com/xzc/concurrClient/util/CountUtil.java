@@ -1,4 +1,4 @@
-package com.xzc.concurrServer.util;
+package com.xzc.concurrClient.util;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.xzc.concurr.pojo.BaseAnalysis;
+import com.xzc.concurr.pojo.Result;
 import com.xzc.concurr.pojo.TransmitDetail;
 
 import net.sf.json.JSONObject;
@@ -24,7 +26,7 @@ public class CountUtil {
 	 * @param map 传进来的map，用于累加已经有的计算结果
 	 * @return 返回一个已经计算好的评论转发map
 	 */
-	public Map<String, Map<String, Integer>>  parseTranCom(String text, String date, 
+	public static Map<String, Map<String, Integer>> parseTranCom(String text, String date, 
 			Map<String, Map<String, Integer>> map){
 
 		//用来计算的,计算完成后就转化为对象
@@ -60,14 +62,13 @@ public class CountUtil {
 	}
 	
 	
-	
 	/**
 	 * 提取表情，并且计算想同表情的数目
 	 * @param text 传进来的字符串，从中提取表情
 	 * @param map 传进方法内的map，用于计算表情数据
 	 * @return 返回已经计算累加的map
 	 */
-	public Map<String, Integer> parseExpression(String text, 
+	public static Map<String, Integer> parseExpression(String text, 
 			Map<String, Integer> map) {
 		Pattern p = Pattern.compile("\\[.*?\\]");
 		Matcher m = p.matcher(text);
@@ -91,7 +92,7 @@ public class CountUtil {
 	 * @param map 传进入方法的map，用于累计计算关键字数目
 	 * @return 返回统计后的关键字结果map
 	 */
-	public Map<String, Integer> parseKeyword(String text, Map<String, Integer> map) {
+	public static Map<String, Integer> parseKeyword(String text, Map<String, Integer> map) {
 
 		//请求
 		//计算
@@ -127,20 +128,22 @@ public class CountUtil {
 	
 	/**
 	 * 用户系列的计算统计，包括transmitDetail 对象的基本设置
-	 * 地区计算，用户类型，粉丝，水军
-	 * @param user
+	 * 地区计算，用户类型，粉丝，水军 这些数据都是累积量
+	 * @param user 解析的用户数据
 	 */
-	public void countUserSerial(String user) {
+	public static Result countUserSerial(String user, Result result) {
 
 		JSONObject userJson = JSONObject.fromObject(user);
-		TransmitDetail transmitdetail = new TransmitDetail();
-		Map<String, Integer> areaMap = new HashMap<>();
-		Map<String, Integer> userTypeMap = new HashMap<>();
+		//下面的都是累积量，需要从原来数据取出
+		BaseAnalysis ba = result.getBaseAnalysis();
+		Map<String, Integer> areaMap = ba.getAreaMap();
+		Map<String, Integer> userTypeMap = ba.getUserTypeMap();
+		Map<String, Integer> fansMap = ba.getUserFansMap();
+		int shuiJunCount = ba.getShuiJunCount();
 		int[] rang = new int[10]; 
-		int shuiJunCount = 0;
 
 		//基本设值
-		transmitdetail = setTransmitDetailOnUser(userJson, transmitdetail);
+		TransmitDetail td  = setTransmitDetailOnUser(userJson);
 		//计算地区
 		areaMap = parseArea(userJson, areaMap);
 		//计算用户类型	
@@ -149,7 +152,17 @@ public class CountUtil {
 		rang = parseFans(userJson, rang);
 		//计算水军
 		shuiJunCount = parseShuiJun(userJson, shuiJunCount);
-
+		
+		ba.setAreaMap(areaMap);
+		ba.setUserTypeMap(userTypeMap);
+		for (int i = 0; i < rang.length; i++) {
+			fansMap.put("rang"+i, rang[i]);
+		}
+		ba.setUserFansMap(fansMap);
+		ba.setShuiJunCount(shuiJunCount);
+		result.getTransmitDetails().add(td);
+		result.setBaseAnalysis(ba);
+		return result;
 	}
 	
 	
@@ -159,7 +172,7 @@ public class CountUtil {
 	 * @param map 传入的map,用于累加计算地区的数目
 	 * @return 返回计算完的地区map
 	 */
-	public Map<String, Integer> parseArea(JSONObject userJson, Map<String, Integer> map) {
+	public static Map<String, Integer> parseArea(JSONObject userJson, Map<String, Integer> map) {
 		String[] areaArr = userJson.getString("location").split(" ");
 		//计算地区
 		if (map.containsKey(areaArr[0])) {
@@ -176,7 +189,7 @@ public class CountUtil {
 	 * @param map 用户类型map，用户累计计算用户类型,在传入之前应该初始化
 	 * @return 返回计算完的用户类型map
 	 */
-	public Map<String, Integer> parseUerType(JSONObject userJson, 
+	public static Map<String, Integer> parseUerType(JSONObject userJson, 
 			Map<String, Integer> map) {
 
 		if(userJson.getString("verified_type").equals("-1")) {
@@ -199,7 +212,7 @@ public class CountUtil {
 	 * @param rang 传入的数据，用于累加计算不同量级的粉丝数目传入之前需要初始化
 	 * @return 返回的计算结果
 	 */
-	public int[] parseFans(JSONObject userJson, int[] rang) {
+	public static  int[] parseFans(JSONObject userJson, int[] rang) {
 
 		//计算粉丝
 		int fansCount = userJson.getInt("followers_count");
@@ -232,7 +245,7 @@ public class CountUtil {
 	 * @param shuiJunCount 传入的水军数目
 	 * @return 返回计算完的水军数目
 	 */
-	public int parseShuiJun(JSONObject userJson , int shuiJunCount) {
+	public static int parseShuiJun(JSONObject userJson , int shuiJunCount) {
 		//计算水军
 		if((userJson.getString("verified_type").equals("-1") && 
 				userJson.getInt("followers_count") < 50) || 
@@ -245,13 +258,13 @@ public class CountUtil {
 
 
 	/**
-	 * 设置TransmitDetail 对象用户属性
-	 * @param userJson 传入的json对象
-	 * @param TransmitDetail 传入的TransmitDetail对象
-	 * @return 返回已经设置好了的TransmitDetail对象
+	 * 传进来json数据，解析并封装到TransmitDetail对象中
+	 * @param userJson 需要解析封装json数据
+	 * @return 封装好的TransmitDetail对象
 	 */
-	public TransmitDetail setTransmitDetailOnUser(JSONObject userJson, TransmitDetail transmitdetail) {
-
+	public static TransmitDetail setTransmitDetailOnUser(JSONObject userJson) {
+		
+		TransmitDetail transmitdetail = new TransmitDetail();
 		//get user's id
 		transmitdetail.setUid(userJson.getString("idstr"));
 		//get user's name
@@ -310,8 +323,6 @@ public class CountUtil {
 		transmitDetail.setTime(finalTime);
 		return transmitDetail;
 	}
-	
-	
 	
 	
 }
