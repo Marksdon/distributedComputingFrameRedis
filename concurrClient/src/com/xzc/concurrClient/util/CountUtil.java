@@ -325,4 +325,23 @@ public class CountUtil {
 	}
 	
 	
+	/**
+	 * 初始化BaseAnalysis的内部对象
+	 * @param ba 需要初始化的BaseAnalysis对象
+	 * @return 已经初始化后的BaseAnalysis对象
+	 */
+	private BaseAnalysis initBaseAnalysisFields(BaseAnalysis ba){
+		Map<String, Integer> areaMap = new HashMap<>();
+		Map<String, Integer> userTypeMap = new HashMap<>();
+		Map<String, Integer> fansMap = new HashMap<>();
+		userTypeMap.put("comTypeCount", 0);
+		userTypeMap.put("cerTypeCount", 0);
+		userTypeMap.put("OfiCerTypeCount", 0);
+		userTypeMap.put("weiboArtTypeCount", 0);
+		ba.setAreaMap(areaMap);
+		ba.setUserTypeMap(userTypeMap);
+		ba.setUserFansMap(fansMap);
+		return ba;
+	}
+	
 }

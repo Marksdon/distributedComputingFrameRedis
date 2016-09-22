@@ -27,10 +27,10 @@ public class Boss implements Runnable {
 
 				if (bArr == null && count.get() != 0) {
 					ThreadUtil.slowThread();
-					System.out.println("barr is null on Boss");
-				} else if(bArr != null){
+					System.err.println("barr is null on Boss");
+				} else if(bArr != null) {
 					Result result = (Result)SerializeUtil.unserialize(bArr);
-					System.out.println("get result: " + result);
+					System.out.println("get result: " + result.getiResult());
 					Map<String, Integer> map = sumTask(result, sucess, fail);
 					sucess = map.get("sucess");
 					fail = map.get("fail");

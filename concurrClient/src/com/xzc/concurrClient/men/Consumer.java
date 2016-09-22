@@ -1,7 +1,9 @@
 package com.xzc.concurrClient.men;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.xzc.concurr.pojo.BaseAnalysis;
 import com.xzc.concurr.pojo.Result;
@@ -25,17 +27,19 @@ public class Consumer implements Runnable{
 		Task task;
 		Result result;
 		Jedis jedis = null;
-
+		AtomicInteger count = new AtomicInteger(0);
+		AtomicInteger count0 = new AtomicInteger(0);
 		while (true) {
 			try {
 				jedis = RedisUtilSyn.getJedis(1);
 				byte[] bArr = jedis.lpop("taskQueueTest".getBytes());
-
+				System.out.println("got's count : " +count0.incrementAndGet());
+				
 				if (bArr == null) {
 					//暂停2秒
 					ThreadUtil.slowThread();
 					System.out.println("barr is null on consumer");
-				} else if (bArr != null){
+				} else if (bArr != null) {
 					task = (Task)SerializeUtil.unserialize(bArr);
 					System.out.println("consume task: " + task.getiTask());
 					//计算任务
@@ -44,6 +48,7 @@ public class Consumer implements Runnable{
 					jedis.rpush("resultQueueTest".getBytes(),
 							SerializeUtil.serialize(result));
 					System.out.println("rpush one: " + result.getiResult());
+					System.out.println("push's count :" + count.incrementAndGet());
 				}
 
 			} catch (Exception e) {
@@ -191,6 +196,8 @@ public class Consumer implements Runnable{
 		result.setResultId((String)task.getObj());
 		result.setiResult(task.getiTask());
 		result.setSumResult(task.getSumTask());
+		result.setBaseAnalysis(new BaseAnalysis());
+		result.setTransmitDetails(new ArrayList<>());
 		return result;
 	}
 

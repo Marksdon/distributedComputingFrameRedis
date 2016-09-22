@@ -26,11 +26,20 @@ public class Producer implements Producable {
 		System.out.println("count's initial value : " + count.intValue());
 
 		ConnectionPool pool = null;
+		//初始化连接池
+		pool =  ConnectionPool.getInstance();
+		if (pool == null) {
+			System.out.println("pool == null");
+		}
 		while (true) {
 			try {
-				//初始化连接池
-				pool =  ConnectionPool.getInstance();
+				
 				Connection conn = pool.getConnection();
+				if (conn == null) {
+					System.out.println("conn == null");
+					pool.closePool();
+					break;
+				}
 				//获得数据
 				List<Blogger> sourceList = SqlWorker.getDateSource(conn);
 				pool.release(conn);//返还conn回连接池
@@ -147,13 +156,13 @@ public class Producer implements Producable {
 		//获得总任务数,假设是m
 		/*int m = 10;*/ //假设的总任务数
 		Blogger blogger = (Blogger)obj;
-		int m = blogger.getTransmits();
+		int m = processSum(blogger.getTransmits()); //暂时先用这个数值
 		List<Task> list = new ArrayList<>();
 		for(int i = 1; i <= m; i ++){
 			Task task = new Task();
-			task.setObj(obj);
+			task.setObj(blogger.getBlogId());
 			task.setiTask(i);
-			task.setSumTask(10);
+			task.setSumTask(m);
 			list.add(task);
 		}
 		return list;
@@ -192,4 +201,13 @@ public class Producer implements Producable {
 		return list;
 	} 
 
+	/**
+	 * 分配任务总数
+	 * @param m 需要分割的数值
+	 * @return 返回的任务总数
+	 */
+	private int processSum(int m){
+		return (m%20 == 0) ? m/20 : (m/20+1);
+	}
+	
 }

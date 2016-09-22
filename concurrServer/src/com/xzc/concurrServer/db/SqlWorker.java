@@ -24,7 +24,7 @@ public class SqlWorker {
 	public static List<Blogger> getDateSource(Connection conn) {
 
 //		String sql = "SELECT `BlogID`,`UID`,`Transmits` FROM `weibo` WHERE `Status` = 0";
-		String sql = "SELECT `BlogID`,`UID`,`Transmits` FROM `weibo` limit 5";
+		String sql = "SELECT `BlogID`,`UID`,`Transmits` FROM `weibo` WHERE `Status` = 0 limit 5";
 
 		PreparedStatement ps0 = null;
 		PreparedStatement ps1 = null;

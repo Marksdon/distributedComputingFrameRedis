@@ -42,10 +42,8 @@ public class CountWorker {
 		//请求数据
 		String json = "";
 		
-		CountUtil cu = new CountUtil();
-		
 		String user = "";
-		cu.countUserSerial(user);		
+//		CountUtil.countUserSerial(user);		
 /*		//关键词
 		cu.parseKeyword(text, map);
 		//表情

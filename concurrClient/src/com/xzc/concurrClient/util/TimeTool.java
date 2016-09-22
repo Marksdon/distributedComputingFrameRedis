@@ -5,7 +5,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.junit.Test;
+
 public class TimeTool {
+	
+	private TimeTool() {
+	}
 	
 	public static long getDays(String str) {
 		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy",Locale.ENGLISH);
@@ -75,5 +80,29 @@ public class TimeTool {
 		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
 		String finalTime = sdf1.format(date);
 		return finalTime;
+	}
+	
+	
+	/**
+	 * 将字符串形式的日期'yyyyMMddHHmmss'转换为'yyyy-MM-dd HH:mm:ss'
+	 * @param dateStr 需要转换的日期
+	 * @return 转换后的日期
+	 */
+	public static String formatDate(String dateStr){
+		if (dateStr.length() == 14) {
+			StringBuilder builder = new StringBuilder(dateStr);
+			builder.insert(4, "-").insert(7, "-");
+			builder.insert(10, " ");
+			builder.insert(13, ":").insert(16, ":");
+			return builder.toString();
+		}
+		return dateStr;
+	}
+	
+	
+	@Test
+	public void testFormatDate(){
+		String dateStr = "20160922002324";
+		System.out.println(formatDate(dateStr));
 	}
 }

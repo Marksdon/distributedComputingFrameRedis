@@ -14,6 +14,9 @@ import net.sf.json.JSONObject;
 
 public class CountUtil {
 	
+	/**
+	 * 工具类一般不给实例化
+	 */
 	private CountUtil() {
 	}
 	
