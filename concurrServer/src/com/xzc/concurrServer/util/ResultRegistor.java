@@ -1,4 +1,4 @@
-package com.xzc.concurr.result;
+package com.xzc.concurrServer.util;
 
 public class ResultRegistor {
 	
