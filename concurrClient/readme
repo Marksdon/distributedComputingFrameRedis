@@ -31,7 +31,32 @@ baseanalysis 对象统计：
  1.2)各个属性的数据封装，各个击破
  
  
-transmitDetails的数据封装 ----------------------------
+transmitDetails的数据封装 ----------------------------[状态看下面]
 
+String analysisBlogId;  ---------[done]
+int levelId;----------------------[暂时设定为1]
+String uid; ---------------------[done]
+String name;---------------------[done]
+String headUrl;------------------[done]
+String url;----------------------[done]
+int transmits;-------------------[done]
+String province;-----------------[done]
+String city;---------------------[done]
+int posts;-----------------------[done]
+int fans;------------------------[done]
+String fromUid;------------------[暂时设定为源微博]
+String blogId;-------------------[done]
+int comments;--------------------[done]
+String content;------------------[done]
+String time;---------------------[done]
+
+
+
+
+Q2.框架问题：
+ 定义代码将和逻辑代码放到一块了比如Comsumer.java
+ 
+ 
+Q3.计算异常没有去充分处理
 
 

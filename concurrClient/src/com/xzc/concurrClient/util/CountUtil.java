@@ -15,10 +15,10 @@ import com.xzc.concurr.pojo.TransmitDetail;
 import net.sf.json.JSONObject;
 
 public class CountUtil {
-	
+
 	private CountUtil() {
 	}
-	
+
 	/**
 	 * 传进来一个定义的map，按日期计算转发数和评论数
 	 * @param text 从text中找匹配字符
@@ -60,8 +60,8 @@ public class CountUtil {
 		}
 		return map;
 	}
-	
-	
+
+
 	/**
 	 * 提取表情，并且计算想同表情的数目
 	 * @param text 传进来的字符串，从中提取表情
@@ -84,8 +84,8 @@ public class CountUtil {
 		}
 		return map;
 	}
-	
-	
+
+
 	/**
 	 * 计算关键词
 	 * @param text 传入方法的字符串，要先经过滤
@@ -94,15 +94,13 @@ public class CountUtil {
 	 */
 	public static Map<String, Integer> parseKeyword(String text, Map<String, Integer> map) {
 
-		//请求
-		//计算
 		List<String> strList = new ArrayList<>();
 		try {
 			//请求分词结果
 			text = URLEncoder.encode(text, "utf-8");
 			String ppl = String.format("http://60.28.252.121:8015/yuSegmenter?text=%s",text);  
 			String word = DownLoader.doGet(ppl, "", "UTF-8", true);
-			
+
 			if (word != null) {
 				word = word.replace("(", "").replace(")", "");
 				String arrays[] = word.split("\\+");
@@ -124,26 +122,31 @@ public class CountUtil {
 		}   
 		return map;
 	}
-	
-	
+
+
 	/**
 	 * 用户系列的计算统计，包括transmitDetail 对象的基本设置
 	 * 地区计算，用户类型，粉丝，水军 这些数据都是累积量
 	 * @param user 解析的用户数据
 	 */
-	public static Result countUserSerial(String user, Result result) {
+	public static Result countUserSerial(String user, Result result, 
+			TransmitDetail td) {
 
 		JSONObject userJson = JSONObject.fromObject(user);
 		//下面的都是累积量，需要从原来数据取出
 		BaseAnalysis ba = result.getBaseAnalysis();
 		Map<String, Integer> areaMap = ba.getAreaMap();
 		Map<String, Integer> cerTypeMap = ba.getCerTypeMap();
-		
+
 		Map<String, Integer> userFansMap = ba.getUserFansMap();
 		Map<String, Integer> shuiJunMap = ba.getShuiJunMap();
 
 		//基本设值
-		TransmitDetail td  = setTransmitDetailOnUser(userJson);
+		td = setTransmitDetailOnUser(userJson,td);
+		//设置TransmitDetail对象analysisBlogId属性
+		td.setAnalysisBlogId(result.getResultId());
+		td.setFromUid(result.getResultId());//暂时设定为源微博
+
 		//计算地区
 		areaMap = parseArea(userJson, areaMap);
 		//计算用户类型	
@@ -152,17 +155,17 @@ public class CountUtil {
 		userFansMap = parseFans(userJson, userFansMap);
 		//计算水军
 		shuiJunMap = parseShuiJun(userJson, shuiJunMap);
-		
+
 		ba.setAreaMap(areaMap);
 		ba.setCerTypeMap(cerTypeMap);
 		ba.setUserFansMap(userFansMap);
 		ba.setShuiJunMap(shuiJunMap);
-//		result.getTransmitDetails().add(td);
+		result.getTransmitDetails().add(td);
 		result.setBaseAnalysis(ba);
 		return result;
 	}
-	
-	
+
+
 	/**
 	 * 计算用户的地区数目
 	 * @param userJson 传入发json对象
@@ -185,7 +188,7 @@ public class CountUtil {
 		return map;
 	}
 
-	
+
 	/**
 	 * 计算用户的认证类型
 	 * @param userJson 传入json对象
@@ -271,66 +274,58 @@ public class CountUtil {
 	 * @param userJson 需要解析封装json数据
 	 * @return 封装好的TransmitDetail对象
 	 */
-	public static TransmitDetail setTransmitDetailOnUser(JSONObject userJson) {
-		
-		TransmitDetail transmitdetail = new TransmitDetail();
-		//get user's id
-		transmitdetail.setUid(userJson.getString("idstr"));
-		//get user's name
-		transmitdetail.setName(userJson.getString("screen_name"));
-		//get user's url of head
-		transmitdetail.setHeadUrl(userJson.getString("profile_image_url"));
-
+	public static TransmitDetail setTransmitDetailOnUser(JSONObject userJson, 
+			TransmitDetail td) {
+		td.setUid(userJson.getString("idstr"));
+		td.setName(userJson.getString("screen_name"));
+		td.setHeadUrl(userJson.getString("profile_image_url"));
 		String[] tempStringArray = userJson.getString("location").split(" ");
-		//get user's province
-		transmitdetail.setProvince(tempStringArray[0]);
-		//get user's city
+		td.setProvince(tempStringArray[0]);
 		if (tempStringArray.length > 1) {
-			transmitdetail.setCity(tempStringArray[1]);
+			td.setCity(tempStringArray[1]);
 		} else {
-			transmitdetail.setCity("其他");
+			td.setCity("其他");
 		}
-
-		//get uers's post count
-		transmitdetail.setPosts(userJson.getInt("statuses_count"));
-		//get uers's fans count
-		transmitdetail.setFans(userJson.getInt("followers_count"));
-		return transmitdetail;
-
+		td.setPosts(userJson.getInt("statuses_count"));
+		td.setFans(userJson.getInt("followers_count"));
+		return td;
 	}
+
 
 
 	/**
-	 * 
-	 * @param jObj
-	 * @param transmitDetail
-	 * @param analysisID
-	 * @param sourceBlogId
-	 * @return
+	 * 封装的TransmitDetail的部分属性数据
+	 * @param jb 传入的json对象数据
+	 * @return 封装数据完成后的TransmitDetail对象
 	 */
-	public TransmitDetail setTransmitDetail(JSONObject jObj,TransmitDetail transmitDetail,
-			String analysisID, String sourceBlogId) {
-		transmitDetail.setTransmits(jObj.getInt("reposts_count"));
-//		transmitDetail.setAnalysisId(analysisID);
-		transmitDetail.setAnalysisBlogId(analysisID);
-	
-		//get current blongId
-		transmitDetail.setBlogId(jObj.getString("idstr"));
-		//get levelId
-		transmitDetail.setLevelId(1);
-		///get current weibo comment count
-		transmitDetail.setComments(jObj.getInt("comments_count"));
-
-		//获得源博主的uid
-		transmitDetail.setFromUid(sourceBlogId);
-		//get current weibo text
-		String text = jObj.getString("text"); //这里要过滤一下 
-		transmitDetail.setContent(text);
-		//get current weibo create time
-		String timeStr = jObj.getString("created_at");
-		String finalTime = TimeTool.formatTimeOnStamps(timeStr);
-		transmitDetail.setTime(finalTime);
-		return transmitDetail;
+	public static TransmitDetail setTransmitDetail(JSONObject jb, String text){
+		TransmitDetail td = new TransmitDetail();
+		td.setBlogId(jb.getString("idstr"));
+		td.setLevelId(1);  //层次暂时定位1
+		td = setTransmitDetailUrl(td);  //封装url属性数据
+		td.setTransmits(jb.getInt("reposts_count"));
+		td.setComments(jb.getInt("comments_count"));
+		td.setContent(text);
+		String time = TimeTool.formatTimeOnStamps(
+				jb.getString("created_at"));
+		td.setTime(time);
+		return td;
 	}
-	
+
+
+
+	/**
+	 * 封装TransmitDetail对象的url属性数据
+	 * @param td 需要封装的TransmitDetail对象
+	 * @return 完成封装后的TransmitDetail对象
+	 */
+	private static TransmitDetail setTransmitDetailUrl(TransmitDetail td){
+		StringBuilder builder = new StringBuilder();
+		String mid = WeiboHelper.Id2Mid(td.getBlogId());
+		String uid = td.getUid();
+		builder.append("http://weibo.com/").append(uid).append("/").append(mid);
+		td.setUrl(builder.toString());
+		return td;
+	}
+
 }

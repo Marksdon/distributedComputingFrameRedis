@@ -3,11 +3,11 @@ package com.xzc.concurrClient.men;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.xzc.concurr.pojo.BaseAnalysis;
 import com.xzc.concurr.pojo.Result;
 import com.xzc.concurr.pojo.Task;
+import com.xzc.concurr.pojo.TransmitDetail;
 import com.xzc.concurrClient.util.CountUtil;
 import com.xzc.concurrClient.util.DownLoader;
 import com.xzc.concurrClient.util.EmojiFilterUtils;
@@ -59,70 +59,14 @@ public class Consumer implements Runnable{
 	}
 
 	/**
-	 * 模拟计算成功的任务
-	 * 模拟计算任务，无论任务计算成功还是失败，都返回一个任务的计算结果对象result
-	 * @param task 传入的任务对象task
-	 * @return 计算结果对象result
-	 */
-	/*public Result countSucessTask(Task task){
-		Result result = new Result();
-		result.setResultId(task.getTaskObjId()+"");
-		result.setiResult(task.getiTask());
-		result.setSumResult(task.getSumTask());
-		result.setFlag(true);
-		return result;
-	}*/
-
-
-	/**
-	 * 模拟计算失败任务，无论任务计算成功还是失败，都返回一个任务的计算结果对象result
-	 * @param task 传入的任务对象task
-	 * @return 计算结果对象result
-	 */
-	/*public Result countFailTask(Task task){
-		Result result = new Result();
-		result.setResultId(task.getTaskObjId()+"");
-		result.setiResult(task.getiTask());
-		result.setSumResult(task.getSumTask());
-		result.setFlag(false);
-		return result;
-	}*/
-
-
-	/**
-	 * 模拟计算任务
-	 * @param task 需要计算的任务
-	 * @return 任务计算完成后的结果对象result
-	 */
-	/*public Result countTask(Task task) {
-		Result result = null;
-		//计算任务
-		if (task.getiTask() == 3 ) {
-			//模拟任务计算失败
-			result = countFailTask(task);
-		} else {
-			//模拟任务计算成功
-			result = countSucessTask(task);
-		}
-		return result;
-	}*/
-
-
-
-	/**
 	 * 传入任务对象{@code task}，获得数据，解析计算数据获得结果对象result
+	 * 1.获取数据;2.解析数据;3.封装对象;4.返回数据
 	 * @param task 需要计算的任务对象
 	 * @return 封装好的结果对象result
 	 */
 	private Result countTask(Task task){
 		//初始化结果对象
 		Result result = initResult(task);
-		/**
-		 * 1.获取数据
-		 * 2.解析数据
-		 * 3.封装对象
-		 * 4.返回数据
-		 */
 		//获取数据
 		String data = DownLoader.getData(task);
 		//检验数据是否可用
@@ -156,20 +100,20 @@ public class Consumer implements Runnable{
 			tranComMap = CountUtil.parseTranCom(text, date, tranComMap);//转发数
 			expressionMap = CountUtil.parseExpression(text, expressionMap);//表情
 			keywordMap = CountUtil.parseKeyword(text, keywordMap);//关键字
-			
+			//产生一个TransmitDetail对象并封装部分属性
+			TransmitDetail td = CountUtil.setTransmitDetail(jb, text);
 			//用户系列,用户级别
 			String user = jb.getString("user");
-			result = CountUtil.countUserSerial(user, result);
+			result = CountUtil.countUserSerial(user, result, td);
 			//TransmitDetail对象数据并没有完全封装
-			
 		}
 		result.getBaseAnalysis().setTranCom(tranComMap);
 		result.getBaseAnalysis().setExpressionMap(expressionMap);
 		result.getBaseAnalysis().setKeyworkMap(keywordMap);
 		result.setFlag(true);//计算任务成功
 		return result;
-
 	}
+
 
 	/**
 	 * 确保数据是否有效可用
