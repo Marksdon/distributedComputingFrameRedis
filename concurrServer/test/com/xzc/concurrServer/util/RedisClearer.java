@@ -14,8 +14,8 @@ public class RedisClearer {
 	}
 	
 	public static void main(String[] args) {
-		clearTaskQueue();//清除任务队列里元素
-//		clearResultQueue();//清除结果队列里元素
+//		clearTaskQueue();//清除任务队列里元素
+		clearResultQueue();//清除结果队列里元素
 	}
 
 	/**

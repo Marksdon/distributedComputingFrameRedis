@@ -27,13 +27,10 @@ public class Consumer implements Runnable{
 		Task task;
 		Result result;
 		Jedis jedis = null;
-		AtomicInteger count = new AtomicInteger(0);
-		AtomicInteger count0 = new AtomicInteger(0);
 		while (true) {
 			try {
 				jedis = RedisUtilSyn.getJedis(1);
 				byte[] bArr = jedis.lpop("taskQueueTest".getBytes());
-				System.out.println("got's count : " +count0.incrementAndGet());
 				
 				if (bArr == null) {
 					//暂停2秒
@@ -48,7 +45,6 @@ public class Consumer implements Runnable{
 					jedis.rpush("resultQueueTest".getBytes(),
 							SerializeUtil.serialize(result));
 					System.out.println("rpush one: " + result.getiResult());
-					System.out.println("push's count :" + count.incrementAndGet());
 				}
 
 			} catch (Exception e) {
@@ -135,7 +131,6 @@ public class Consumer implements Runnable{
 		}
 		//解析并封装数据
 		result = encapsulateResult(data,result);
-//		result.setFlag(true);//计算任务成功
 		return result;
 	}
 
@@ -146,7 +141,6 @@ public class Consumer implements Runnable{
 	 * @return 封装好的result对象
 	 */
 	private Result encapsulateResult(String data, Result result){
-		BaseAnalysis ba = new BaseAnalysis();
 		//具体解析
 		JSONObject jsonObject = JSONObject.fromObject(data);//为处理异常
 		JSONArray aJsonArray = jsonObject.getJSONArray("reposts");
@@ -156,7 +150,7 @@ public class Consumer implements Runnable{
 		
 		for(int j=0;j<aJsonArray.size();j++) {
 			JSONObject jb = aJsonArray.getJSONObject(j);
-			//text级别
+			//text级别,没有加上可用性判断
 			String text = EmojiFilterUtils.filterEmoji(jb.getString("text"));
 			String date = TimeTool.formatTimeOnDate(jb.getString("created_at"));
 			tranComMap = CountUtil.parseTranCom(text, date, tranComMap);//转发数
@@ -169,10 +163,10 @@ public class Consumer implements Runnable{
 			//TransmitDetail对象数据并没有完全封装
 			
 		}
-		ba.setTranCom(tranComMap);
-		ba.setExpressionMap(expressionMap);
-		ba.setKeyworkMap(keywordMap);
-		result.setBaseAnalysis(ba);
+		result.getBaseAnalysis().setTranCom(tranComMap);
+		result.getBaseAnalysis().setExpressionMap(expressionMap);
+		result.getBaseAnalysis().setKeyworkMap(keywordMap);
+		result.setFlag(true);//计算任务成功
 		return result;
 
 	}

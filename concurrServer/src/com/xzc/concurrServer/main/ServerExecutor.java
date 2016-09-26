@@ -21,7 +21,7 @@ public class ServerExecutor {
 	public void startup () {
 		ExecutorService service = Executors.newFixedThreadPool(10);
 		service.execute(new Producer());
-//		service.execute(new Boss());
+		service.execute(new Boss());
 	}
 	
 }

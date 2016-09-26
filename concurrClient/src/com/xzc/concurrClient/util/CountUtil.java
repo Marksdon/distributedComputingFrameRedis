@@ -137,30 +137,27 @@ public class CountUtil {
 		//下面的都是累积量，需要从原来数据取出
 		BaseAnalysis ba = result.getBaseAnalysis();
 		Map<String, Integer> areaMap = ba.getAreaMap();
-		Map<String, Integer> userTypeMap = ba.getUserTypeMap();
-		Map<String, Integer> fansMap = ba.getUserFansMap();
-		int shuiJunCount = ba.getShuiJunCount();
-		int[] rang = new int[10]; 
+		Map<String, Integer> cerTypeMap = ba.getCerTypeMap();
+		
+		Map<String, Integer> userFansMap = ba.getUserFansMap();
+		Map<String, Integer> shuiJunMap = ba.getShuiJunMap();
 
 		//基本设值
 		TransmitDetail td  = setTransmitDetailOnUser(userJson);
 		//计算地区
 		areaMap = parseArea(userJson, areaMap);
 		//计算用户类型	
-		userTypeMap = parseUerType(userJson, userTypeMap);
+		cerTypeMap = parseCerType(userJson, cerTypeMap);
 		//计算粉丝
-		rang = parseFans(userJson, rang);
+		userFansMap = parseFans(userJson, userFansMap);
 		//计算水军
-		shuiJunCount = parseShuiJun(userJson, shuiJunCount);
+		shuiJunMap = parseShuiJun(userJson, shuiJunMap);
 		
 		ba.setAreaMap(areaMap);
-		ba.setUserTypeMap(userTypeMap);
-		for (int i = 0; i < rang.length; i++) {
-			fansMap.put("rang"+i, rang[i]);
-		}
-		ba.setUserFansMap(fansMap);
-		ba.setShuiJunCount(shuiJunCount);
-		result.getTransmitDetails().add(td);
+		ba.setCerTypeMap(cerTypeMap);
+		ba.setUserFansMap(userFansMap);
+		ba.setShuiJunMap(shuiJunMap);
+//		result.getTransmitDetails().add(td);
 		result.setBaseAnalysis(ba);
 		return result;
 	}
@@ -172,88 +169,100 @@ public class CountUtil {
 	 * @param map 传入的map,用于累加计算地区的数目
 	 * @return 返回计算完的地区map
 	 */
-	public static Map<String, Integer> parseArea(JSONObject userJson, Map<String, Integer> map) {
-		String[] areaArr = userJson.getString("location").split(" ");
-		//计算地区
-		if (map.containsKey(areaArr[0])) {
-			map.put(areaArr[0], map.get(areaArr[0])+1);
-		} else {
-			map.put(areaArr[0], 1);
-		}
-		return map;
-	}
-
-	/**
-	 *  传入json对象，计算用户类型
-	 * @param userJson 传入json对象
-	 * @param map 用户类型map，用户累计计算用户类型,在传入之前应该初始化
-	 * @return 返回计算完的用户类型map
-	 */
-	public static Map<String, Integer> parseUerType(JSONObject userJson, 
+	public static Map<String, Integer> parseArea(JSONObject userJson, 
 			Map<String, Integer> map) {
-
-		if(userJson.getString("verified_type").equals("-1")) {
-			map.put("comTypeCount", map.get("comTypeCount")+1);
-		} else if(userJson.getString("verified_type").equals("0")) {
-			map.put("cerTypeCount", map.get("cerTypeCount")+1);
-		} else if(userJson.getString("verified_type").equals("200")||
-				userJson.getString("verified_type").equals("220")){
-			map.put("weiboArtTypeCount", map.get("weiboArtTypeCount")+1);
-		} else {
-			map.put("weiboArtTypeCount", map.get("weiboArtTypeCount")+1);
+		try {
+			String[] areaArr = userJson.getString("location").split(" ");
+			//计算地区
+			if (map.containsKey(areaArr[0])) {
+				map.put(areaArr[0], map.get(areaArr[0])+1);
+			} else {
+				map.put(areaArr[0], 1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return map;
+	}
+
+	
+	/**
+	 * 计算用户的认证类型
+	 * @param userJson 传入json对象
+	 * @param map 用户认证类型累积map
+	 * @return 完成一次累积的后的map
+	 */
+	public static Map<String, Integer> parseCerType(JSONObject userJson, 
+			Map<String, Integer> map) {
+		try {
+			if(userJson.getString("verified_type").equals("-1")) {
+				map.put("comType", map.get("comType")+1);
+			} else if(userJson.getString("verified_type").equals("0")) {
+				map.put("cerType", map.get("cerType")+1);
+			} else if(userJson.getString("verified_type").equals("200")||
+					userJson.getString("verified_type").equals("220")){
+				map.put("weiboArtType", map.get("weiboArtType")+1);
+			} else {
+				map.put("ofiCerType", map.get("ofiCerType")+1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		return map;
 	}
 
 
 	/**
-	 * 传入已经json对象，计算不同量级的粉丝个数
+	 * 计算用户粉丝不同量级的个数
 	 * @param userJson 传入的的json对象
-	 * @param rang 传入的数据，用于累加计算不同量级的粉丝数目传入之前需要初始化
-	 * @return 返回的计算结果
+	 * @param userFansMap 累积用户粉丝不同量级的map对象
+	 * @return 完成一次累积的后的map对象
 	 */
-	public static  int[] parseFans(JSONObject userJson, int[] rang) {
+	public static Map<String, Integer> parseFans(JSONObject userJson, Map<String, Integer> userFansMap) {
 
 		//计算粉丝
 		int fansCount = userJson.getInt("followers_count");
 		if (fansCount >= 0 && fansCount < 50) {
-			rang[0] ++;
+			userFansMap.put("rang0", userFansMap.get("rang0")+1);
 		} else if (fansCount >= 50 && fansCount < 100) {
-			rang[1] ++;
+			userFansMap.put("rang1", userFansMap.get("rang1")+1);
 		} else if (fansCount >= 100 && fansCount < 200) {
-			rang[2] ++;
+			userFansMap.put("rang2", userFansMap.get("rang2")+1);
 		} else if (fansCount >= 200 && fansCount < 500) {
-			rang[3] ++;
+			userFansMap.put("rang3", userFansMap.get("rang3")+1);
 		} else if (fansCount >= 500 && fansCount < 1000) {
-			rang[4] ++;
+			userFansMap.put("rang4", userFansMap.get("rang4")+1);
 		} else if (fansCount >= 1000 && fansCount < 10000) {
-			rang[5] ++;
+			userFansMap.put("rang5", userFansMap.get("rang5")+1);
 		} else if (fansCount >= 10000 && fansCount < 50000) {
-			rang[6] ++;
+			userFansMap.put("rang6", userFansMap.get("rang6")+1);
 		} else if (fansCount >= 50000 && fansCount < 100000) {
-			rang[7] ++;
+			userFansMap.put("rang7", userFansMap.get("rang7")+1);
 		} else if (fansCount >= 100000) {
-			rang[8] ++;
+			userFansMap.put("rang8", userFansMap.get("rang8")+1);
 		}
-		return rang;
+		return userFansMap;
 	}
 
 
 	/**
-	 * 累加计算水军的数目
-	 * @param userJson 传入的json对象
-	 * @param shuiJunCount 传入的水军数目
-	 * @return 返回计算完的水军数目
+	 * 累加计算水军用户和真实用户
+	 * @param userJson 需要解析的json数据
+	 * @param shuiJunMap 水军map累积量
+	 * @return 完成累积计算一次的水军map
 	 */
-	public static int parseShuiJun(JSONObject userJson , int shuiJunCount) {
-		//计算水军
+	public static Map<String, Integer> parseShuiJun(JSONObject userJson , Map<String, Integer> shuiJunMap) {
+		//计算水军用户和真实用户
 		if((userJson.getString("verified_type").equals("-1") && 
 				userJson.getInt("followers_count") < 50) || 
 				(TimeTool.getDays(userJson.getString("created_at"))<90 && 
 						userJson.getInt("statuses_count") < 20)) {
-			shuiJunCount ++;
-		} 
-		return shuiJunCount;
+			shuiJunMap.put("shuiJun", shuiJunMap.get("shuiJun") + 1);
+		} else {
+			shuiJunMap.put("realUser", shuiJunMap.get("realUser") + 1);
+		}
+		return shuiJunMap;
 	}
 
 
@@ -322,26 +331,6 @@ public class CountUtil {
 		String finalTime = TimeTool.formatTimeOnStamps(timeStr);
 		transmitDetail.setTime(finalTime);
 		return transmitDetail;
-	}
-	
-	
-	/**
-	 * 初始化BaseAnalysis的内部对象
-	 * @param ba 需要初始化的BaseAnalysis对象
-	 * @return 已经初始化后的BaseAnalysis对象
-	 */
-	private BaseAnalysis initBaseAnalysisFields(BaseAnalysis ba){
-		Map<String, Integer> areaMap = new HashMap<>();
-		Map<String, Integer> userTypeMap = new HashMap<>();
-		Map<String, Integer> fansMap = new HashMap<>();
-		userTypeMap.put("comTypeCount", 0);
-		userTypeMap.put("cerTypeCount", 0);
-		userTypeMap.put("OfiCerTypeCount", 0);
-		userTypeMap.put("weiboArtTypeCount", 0);
-		ba.setAreaMap(areaMap);
-		ba.setUserTypeMap(userTypeMap);
-		ba.setUserFansMap(fansMap);
-		return ba;
 	}
 	
 }

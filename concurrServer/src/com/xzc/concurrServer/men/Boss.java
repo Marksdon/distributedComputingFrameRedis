@@ -5,6 +5,7 @@ import com.xzc.concurr.result.RegistorCollection;
 import com.xzc.concurr.result.ResultRegistor;
 import com.xzc.concurrServer.util.RedisUtilSyn;
 import com.xzc.concurrServer.util.SerializeUtil;
+import com.xzc.concurrServer.util.ThreadUtil;
 
 import redis.clients.jedis.Jedis;
 
@@ -23,6 +24,7 @@ public class Boss implements Runnable {
 				if (bArr == null) {
 					//
 					System.err.println("bArr == null");
+					ThreadUtil.slowThread();
 				} else {
 					Result result = (Result)SerializeUtil.unserialize(bArr);
 					if ((registor = rc.collecteResult(result)) != null) {//该项计算完成
