@@ -1,10 +1,19 @@
 package com.xzc.concurrServer.men;
 
+import java.sql.Connection;
+import java.util.List;
+
+import com.xzc.concurr.pojo.BaseAnalysis;
+import com.xzc.concurr.pojo.BaseAnalysisPojo;
 import com.xzc.concurr.pojo.Result;
 import com.xzc.concurr.result.RegistorCollection;
 import com.xzc.concurr.result.ResultRegistor;
+import com.xzc.concurrServer.db.SqlWorker;
+import com.xzc.concurrServer.util.CollectUtil;
+import com.xzc.concurrServer.util.JDBCUtil;
 import com.xzc.concurrServer.util.RedisUtilSyn;
 import com.xzc.concurrServer.util.SerializeUtil;
+import com.xzc.concurrServer.util.SqlConfig;
 import com.xzc.concurrServer.util.ThreadUtil;
 
 import redis.clients.jedis.Jedis;
@@ -17,20 +26,34 @@ public class Boss implements Runnable {
 		Jedis jedis = null;
 		RegistorCollection rc = new RegistorCollection();
 		ResultRegistor registor = null;
+		
+//		Result localResult = CollectUtil.initLocalResult();
+		BaseAnalysis localBa = new BaseAnalysis();
+		Connection conn = null;
 		while (true) {
 			try {
 				jedis = RedisUtilSyn.getJedis(1);
 				byte[] bArr = jedis.lpop("resultQueueTest".getBytes());
 				if (bArr == null) {
-					//
 					System.err.println("bArr == null");
 					ThreadUtil.slowThread();
 				} else {
 					Result result = (Result)SerializeUtil.unserialize(bArr);
 					if ((registor = rc.collecteResult(result)) != null) {//该项计算完成
+						BaseAnalysis ba = result.getBaseAnalysis();
+						localBa.setAnalysisBlogId(registor.getResultId());
+						localBa = CollectUtil.collectBaseAnalysis(localBa, ba);
+						localBa = CollectUtil.getTop10(localBa);//截取BaseAnalysis中的关键字和表情的前10
 						//计算完成，可以入库处理
 						System.out.println(registor.getResultId() + " 收集完成，可以入库处理");
+
+						List<BaseAnalysisPojo> list = CollectUtil.toBaseAnalysisPojoList(localBa);
+						conn = JDBCUtil.getMySQLConnection(SqlConfig.url);
+						SqlWorker.SaveBaseAnalysisListTest(conn, list);
+						showValue(localBa);
 					} else {
+						BaseAnalysis ba = result.getBaseAnalysis();
+						localBa = CollectUtil.collectBaseAnalysis(localBa, ba); 
 						//未完成收集计算结果，继续汇总统计
 						System.out.println("未完成收集计算结果，继续汇总统计");
 					}
@@ -42,9 +65,21 @@ public class Boss implements Runnable {
 				if (jedis != null) {
 					RedisUtilSyn.returnResource(jedis);
 				}
+				JDBCUtil.close(conn);
 			}
 		}
 
+	}
+	
+	
+	private void showValue(BaseAnalysis ba){
+		System.out.println(ba.getTranCom());
+		System.out.println(ba.getShuiJunMap());
+		System.out.println(ba.getExpressionMap());//
+		System.out.println(ba.getCerTypeMap());
+		System.out.println(ba.getKeyworkMap());//
+		System.out.println(ba.getAreaMap());
+		System.out.println(ba.getUserFansMap());
 	}
 
 }

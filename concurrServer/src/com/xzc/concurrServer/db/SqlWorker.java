@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.xzc.concurr.pojo.BaseAnalysisPojo;
 import com.xzc.concurr.pojo.Blogger;
 import com.xzc.concurrServer.util.JDBCUtil;
 
@@ -23,7 +24,7 @@ public class SqlWorker {
 	 */
 	public static List<Blogger> getDateSource(Connection conn) {
 
-//		String sql = "SELECT `BlogID`,`UID`,`Transmits` FROM `weibo` WHERE `Status` = 0";
+		//		String sql = "SELECT `BlogID`,`UID`,`Transmits` FROM `weibo` WHERE `Status` = 0";
 		String sql = "SELECT `BlogID`,`UID`,`Transmits` "
 				+ "FROM `urun_opinion_gz_blog`.`weibo` WHERE `Status` = 0 limit 5";
 
@@ -59,7 +60,143 @@ public class SqlWorker {
 
 
 
+	/**
+	 * 测试入库方法
+	 * @param conn
+	 * @param list
+	 * @return
+	 */
+	public static void SaveBaseAnalysisList(Connection conn, List<BaseAnalysisPojo> list) {
+
+		PreparedStatement ps0 = null;
+		PreparedStatement ps1 = null;
+		PreparedStatement ps2 = null;
+		PreparedStatement ps3 = null;
+		PreparedStatement ps4 = null;
+		ResultSet rs = null;
+		String flagId = null;
+		try {
+			for(BaseAnalysisPojo baseAnalysis : list) {
+
+				try{
+					ps0 = conn.prepareStatement("select OutID from baseanalysis_copy where OutID=? and TypeID=? and AnalysisType=? and Name=? and Date=?");
+					ps0.setObject(1, baseAnalysis.getOutId());
+					ps0.setObject(2, baseAnalysis.getTypeId());
+					ps0.setObject(3, baseAnalysis.getAnalysisType());
+					ps0.setObject(4, baseAnalysis.getName());
+					ps0.setObject(5, baseAnalysis.getDate());
+					rs = ps0.executeQuery();
+					if (!rs.next()) {
+						try {
+							ps1 = conn.prepareStatement("insert into baseanalysis_copy (OutID,TypeID,AnalysisType,Name,Count,Code,Date,Time) values (?,?,?,?,?,?,?,?) ");
+							ps1.setObject(1, baseAnalysis.getOutId());
+							ps1.setObject(2, baseAnalysis.getTypeId());
+							ps1.setObject(3, baseAnalysis.getAnalysisType());
+							ps1.setObject(4, baseAnalysis.getName());
+							ps1.setObject(5, baseAnalysis.getCount());
+							ps1.setObject(6, baseAnalysis.getCode());
+							ps1.setObject(7, baseAnalysis.getDate());
+							ps1.setObject(8, baseAnalysis.getDateTime());
+							ps1.executeUpdate();
+							flagId = baseAnalysis.getOutId();
+						} catch (Exception e) {
+							e.printStackTrace();
+							System.out.println("=|=|=|=抛出异常catch到的： " + baseAnalysis.getName());
+							baseAnalysis.setName("temp");
+							System.out.println("|||----after abs:" + baseAnalysis.getName());
+						}
+					} 
+					else {
+						try {
+							ps2 = conn.prepareStatement("update baseanalysis_copy set Count=?,Date=?,Time=? where OutID=? and TypeID=? and AnalysisType=? and Name=? and Date=?");
+							ps2.setObject(1, baseAnalysis.getCount());
+							ps2.setObject(2, baseAnalysis.getDate());
+							ps2.setObject(3, baseAnalysis.getDateTime());
+							ps2.setObject(4, baseAnalysis.getOutId());
+							ps2.setObject(5, baseAnalysis.getTypeId());
+							ps2.setObject(6, baseAnalysis.getAnalysisType());
+							ps2.setObject(7, baseAnalysis.getName());
+							ps2.setObject(8, baseAnalysis.getDate());
+							ps2.executeUpdate();
+
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				} catch(Exception ex){
+					ex.printStackTrace();
+				}
+			}
+
+			ps3 = conn.prepareStatement("update baseanalysis_copy,face set baseanalysis_copy.Code = face.ID where baseanalysis_copy.Name = face.Phrase");
+			ps3.executeUpdate();
+			ps4 = conn.prepareStatement("update weibo set Status=0 where BlogID=?");
+			ps4.setObject(1, flagId);
+			ps4.executeUpdate();
+			System.out.println("完成入库");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			JDBCUtil.close(ps0, ps1, ps2, ps3, ps4,rs);
+
+		}
+	}
 
 
+
+
+	/**
+	 * 测试入库
+	 * @param conn
+	 * @param list
+	 */
+	public static void SaveBaseAnalysisListTest(Connection conn, List<BaseAnalysisPojo> list) {
+
+		PreparedStatement ps0 = null;
+		PreparedStatement ps1 = null;
+		PreparedStatement ps2 = null;
+		PreparedStatement ps3 = null;
+		PreparedStatement ps4 = null;
+		ResultSet rs = null;
+		String flagId = null;
+		try {
+			for(BaseAnalysisPojo baseAnalysis : list) {
+				try{
+
+					ps1 = conn.prepareStatement("insert into baseanalysis_copy (OutID,TypeID,AnalysisType,Name,Count,Code,Date,Time) values (?,?,?,?,?,?,?,?) ");
+					ps1.setObject(1, baseAnalysis.getOutId());
+					ps1.setObject(2, baseAnalysis.getTypeId());
+					ps1.setObject(3, baseAnalysis.getAnalysisType());
+					ps1.setObject(4, baseAnalysis.getName());
+					ps1.setObject(5, baseAnalysis.getCount());
+					ps1.setObject(6, baseAnalysis.getCode());
+					ps1.setObject(7, baseAnalysis.getDate());
+					ps1.setObject(8, baseAnalysis.getDateTime());
+					ps1.executeUpdate();
+					flagId = baseAnalysis.getOutId();
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println("=|=|=|=抛出异常catch到的： " + baseAnalysis.getName());
+					baseAnalysis.setName("temp");
+					System.out.println("|||----after abs:" + baseAnalysis.getName());
+				}
+			} 
+			ps3 = conn.prepareStatement("update baseanalysis_copy,face set baseanalysis_copy.Code = face.ID where baseanalysis_copy.Name = face.Phrase");
+			ps3.executeUpdate();
+			ps4 = conn.prepareStatement("update weibo set Status=0 where BlogID=?");
+			ps4.setObject(1, flagId);
+			ps4.executeUpdate();
+			System.out.println("完成入库");
+
+		} catch(Exception ex){
+			ex.printStackTrace();
+		} finally {
+			JDBCUtil.close(ps0, ps1, ps2, ps3, ps4,rs);
+
+		}
+		
+
+	}
 
 }
+

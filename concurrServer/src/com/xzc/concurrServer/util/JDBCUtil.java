@@ -195,6 +195,75 @@ public class JDBCUtil {
 
 	}
 
+	
+	/**
+	 * 关闭四个数据库会话，一个结果集
+	 * @param ps0 数据库会话
+	 * @param ps1 数据库会话
+	 * @param ps2 数据库会话
+	 * @param ps3 数据库会话
+	 * @param ps4  数据库会话
+	 * @param rs 结果集
+	 */
+	public static void close(PreparedStatement ps0, PreparedStatement ps1,
+			PreparedStatement ps2, PreparedStatement ps3, PreparedStatement ps4, ResultSet rs) {
+		if (rs != null) {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				rs = null;
+			}
+		}
+		if (ps0 != null) {
+			try {
+				ps0.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps0 = null;
+			}
+		}
+		if (ps1 != null) {
+			try {
+				ps1.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps1 = null;
+			}
+		}
+		if (ps2 != null) {
+			try {
+				ps2.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps2 = null;
+			}
+		}
+		if (ps3 != null) {
+			try {
+				ps3.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps3 = null;
+			}
+		}
+		if (ps4 != null) {
+			try {
+				ps4.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps4 = null;
+			}
+		}
+
+	}
+	
 
 	/**
 	 * 关闭两个数据库会话

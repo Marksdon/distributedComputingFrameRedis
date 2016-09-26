@@ -7,6 +7,7 @@ import java.util.Map;
 public class BaseAnalysis implements Serializable {
 
 	static final long serialVersionUID = 1L;
+	private String analysisBlogId;
 	//1.转发评论
 	private Map<String, Map<String, Integer>> tranCom;
 	//2.用户类型（水军用户 ，真实用户）
@@ -42,6 +43,16 @@ public class BaseAnalysis implements Serializable {
 	}
 	
 	
+	public String getAnalysisBlogId() {
+		return analysisBlogId;
+	}
+
+
+	public void setAnalysisBlogId(String analysisBlogId) {
+		this.analysisBlogId = analysisBlogId;
+	}
+
+
 	public Map<String, Map<String, Integer>> getTranCom() {
 		return tranCom;
 	}

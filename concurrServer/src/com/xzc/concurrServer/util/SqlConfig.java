@@ -14,6 +14,6 @@ public class SqlConfig {
 	public static final String USER2 = "root";
 //	public static final String PASSWORD2 = "****";//无设置密码
 	public static final String url = "jdbc:mysql://"+DBADDR2+"?"
-			+ "user="+USER2+"&password=&useUnicode=true&characterEncoding=UTF8";
+			+ "user="+USER2+"&password=xiezhichun&useUnicode=true&characterEncoding=UTF8";
 	
 }

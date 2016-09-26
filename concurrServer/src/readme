@@ -1,0 +1,39 @@
+汇总计算
+
+1.汇总baseanalysis
+
+1.1）知道要汇总那些属性
+1.2）汇总后的转换的对象
+1.3）汇总后的持久化类如何分
+
+老办法：
+1.分解
+2.各个击破
+	//1.转发评论
+	private Map<String, Map<String, Integer>> tranCom; ----------[done]
+	//2.用户类型（水军用户 ，真实用户）
+	private Map<String, Integer> shuiJunMap;---------------------[done]
+	//3.表情统计
+	private Map<String, Integer> expressionMap;------------------[done]//累积时获取数值最高的前20
+	//4.用户认证类型
+	private Map<String, Integer> cerTypeMap;---------------------[done]
+	//5.关键字
+	private Map<String, Integer> keyworkMap;---------------------[done]
+	//6.用户地区分布
+	private Map<String,Integer> areaMap;-------------------------[done]
+	//7.用户粉丝分析
+	private Map<String,Integer> userFansMap;---------------------[done]
+	
+	
+	
+baseAnalysis变成list准备持久化
+	private String outId;      //一样
+	private int typeId;        //一样
+	private int analysisType;  
+	private String name;
+	private int count;
+	private String code;
+	private Date date;        //一样
+	private Timestamp dateTime;//一样
+	
+	

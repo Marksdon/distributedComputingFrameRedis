@@ -75,6 +75,7 @@ public class Consumer implements Runnable{
 		}
 		//解析并封装数据
 		result = encapsulateResult(data,result);
+		result.getBaseAnalysis().setAnalysisBlogId(result.getResultId());
 		return result;
 	}
 
