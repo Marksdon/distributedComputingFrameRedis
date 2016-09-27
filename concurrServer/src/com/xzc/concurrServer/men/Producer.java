@@ -57,14 +57,16 @@ public class Producer implements Producable {
 				
 				//线程沉睡30分钟
 				Thread.sleep(1800000);
+//				Thread.sleep(90000);
 			} catch (Exception e) {
 				e.printStackTrace();
 				//logger
-			} finally {
-				if (pool != null) {
-					pool.closePool();
-				}
 			}
+//			finally {
+//				if (pool != null) {
+//					pool.closePool();
+//				}
+//			}
 
 		}
 	}

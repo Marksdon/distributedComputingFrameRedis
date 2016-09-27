@@ -20,7 +20,7 @@ public class RegistorCollection {
 		map = new HashMap<>();
 	}
 
-	
+
 	/**
 	 * 统计收集计算结果{@code result}，放到集合中(hashMap),
 	 * 传入的某项任务如果收集完成就返回该项计算结果的ResultRegistor对象
@@ -28,26 +28,27 @@ public class RegistorCollection {
 	 * @return 如果{@code result}全部收集完成就返回对应的ResultRegistor，否则返回null
 	 */
 	public ResultRegistor collecteResult(Result result){
-
+		ResultRegistor rr = null;
 		if (!map.containsKey(result.getResultId())) {
-			ResultRegistor rr = initResultRegistor(result);
+			rr = initResultRegistor(result);
 			map.put(result.getResultId(), rr);
 		} else {
-			ResultRegistor rr = map.get(result.getResultId());
+			rr = map.get(result.getResultId());
 			if (result.isFlag()) {
 				rr.setSuccessNum(rr.getSuccessNum() + 1);
 			} else {
 				rr.setFailNum(rr.getFailNum() + 1);
 			}
-			if (isDone(rr)) {
-				map.remove(rr.getResultId());//收集完成，移出map
-				return rr;
-			}
+
+		}
+		if (isDone(rr)) {
+			map.remove(rr.getResultId());//收集完成，移出map
+			return rr;
 		}
 		return null;
 
 	}
-	
+
 	/**
 	 * 返回当前集合所剩余的结果收集任务数
 	 * @return 当前集合没有收集完成的结果项数

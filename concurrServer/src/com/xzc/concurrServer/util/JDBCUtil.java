@@ -100,6 +100,22 @@ public class JDBCUtil {
 			}
 		}
 	}
+	
+	/**
+	 * 关闭一个数据会话
+	 * @param ps 数据库会话
+	 */
+	public static void close(PreparedStatement ps) {
+		if (ps != null) {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps = null;
+			}
+		}
+	}
 
 	/**
 	 * 关闭一个数据库会话，一个结果集
@@ -195,6 +211,49 @@ public class JDBCUtil {
 
 	}
 
+	
+	public static void close(PreparedStatement ps0, PreparedStatement ps1,
+			PreparedStatement ps2, ResultSet rs) {
+		if (rs != null) {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				rs = null;
+			}
+		}
+		if (ps0 != null) {
+			try {
+				ps0.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps0 = null;
+			}
+		}
+		if (ps1 != null) {
+			try {
+				ps1.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps1 = null;
+			}
+		}
+		if (ps2 != null) {
+			try {
+				ps2.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				ps2 = null;
+			}
+		}
+
+	}
+	
+	
 	
 	/**
 	 * 关闭四个数据库会话，一个结果集

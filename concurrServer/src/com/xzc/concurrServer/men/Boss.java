@@ -1,11 +1,16 @@
 package com.xzc.concurrServer.men;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.xzc.concurr.pojo.BaseAnalysis;
 import com.xzc.concurr.pojo.BaseAnalysisPojo;
 import com.xzc.concurr.pojo.Result;
+import com.xzc.concurr.pojo.TransmitDetail;
+import com.xzc.concurr.relationship.Relationship;
 import com.xzc.concurr.result.RegistorCollection;
 import com.xzc.concurr.result.ResultRegistor;
 import com.xzc.concurrServer.db.SqlWorker;
@@ -27,8 +32,11 @@ public class Boss implements Runnable {
 		RegistorCollection rc = new RegistorCollection();
 		ResultRegistor registor = null;
 		
+		Map<String, Result> map = new HashMap<>();//结果池,未实现
+		
 //		Result localResult = CollectUtil.initLocalResult();
 		BaseAnalysis localBa = new BaseAnalysis();
+		List<TransmitDetail> localTd = new ArrayList<>();
 		Connection conn = null;
 		while (true) {
 			try {
@@ -39,18 +47,27 @@ public class Boss implements Runnable {
 					ThreadUtil.slowThread();
 				} else {
 					Result result = (Result)SerializeUtil.unserialize(bArr);
+					localTd.addAll(result.getTransmitDetails());//还没有做大小的限制
 					if ((registor = rc.collecteResult(result)) != null) {//该项计算完成
+						
 						BaseAnalysis ba = result.getBaseAnalysis();
 						localBa.setAnalysisBlogId(registor.getResultId());
 						localBa = CollectUtil.collectBaseAnalysis(localBa, ba);
 						localBa = CollectUtil.getTop10(localBa);//截取BaseAnalysis中的关键字和表情的前10
 						//计算完成，可以入库处理
 						System.out.println(registor.getResultId() + " 收集完成，可以入库处理");
-
+						
+						List<TransmitDetail> finalTds = 
+								Relationship.buildRelationship(localTd, localTd.get(0));//随意的
+						
+						
 						List<BaseAnalysisPojo> list = CollectUtil.toBaseAnalysisPojoList(localBa);
 						conn = JDBCUtil.getMySQLConnection(SqlConfig.url);
 						SqlWorker.SaveBaseAnalysisListTest(conn, list);
+						SqlWorker.saveTransDetailList(conn, finalTds);
 						showValue(localBa);
+						localBa = new BaseAnalysis();//销毁旧对象
+						localTd.clear();
 					} else {
 						BaseAnalysis ba = result.getBaseAnalysis();
 						localBa = CollectUtil.collectBaseAnalysis(localBa, ba); 
@@ -81,5 +98,10 @@ public class Boss implements Runnable {
 		System.out.println(ba.getAreaMap());
 		System.out.println(ba.getUserFansMap());
 	}
+	
+	
+	
+	
+	
 
 }
