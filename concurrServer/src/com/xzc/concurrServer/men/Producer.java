@@ -22,53 +22,57 @@ public class Producer implements Producable {
 	private static AtomicInteger count = new AtomicInteger();
 
 	@Override
-	public void run() {
+	public void run(){
+
 		System.out.println("count's initial value : " + count.intValue());
-
 		ConnectionPool pool = null;
-		//初始化连接池
-		pool =  ConnectionPool.getInstance();
-		if (pool == null) {
-			System.out.println("pool == null");
-		}
-		while (true) {
-			try {
-				
-				Connection conn = pool.getConnection();
-				if (conn == null) {
-					System.out.println("conn == null");
-					pool.closePool();
-					break;
-				}
-				//获得数据
-				List<Blogger> sourceList = SqlWorker.getDateSource(conn);
-				pool.release(conn);//返还conn回连接池
-
-				for (Blogger taskObj : sourceList) {
-					//设置任务对象属性
-					List<Task> taskList = setTasks(taskObj);
-					//分配任务
-					//assignTasks(taskList);
-					assignTasksTestNotNullJedis(taskList);
-				}
-				//任务分配完成后，呼叫GC清空一下sourceList里面的对象
-				sourceList.clear();
-				System.out.println("sourceList is empty: " + sourceList.isEmpty());
-				
-				//线程沉睡30分钟
-				Thread.sleep(1800000);
-//				Thread.sleep(90000);
-			} catch (Exception e) {
-				e.printStackTrace();
-				//logger
-			}
-//			finally {
-//				if (pool != null) {
-//					pool.closePool();
-//				}
+//		try {
+			//初始化连接池
+//			pool =  ConnectionPool.getInstance();
+//			if (pool == null) {
+//				System.out.println("pool == null");
 //			}
+			while (true) {
+				try {
+					Connection conn = pool.getConnection();
+					if (conn == null) {
+						System.out.println("conn == null");
+						pool.closePool();
+						break;
+					}
+					//获得数据
+					List<Blogger> sourceList = SqlWorker.getDateSource(conn);
+					pool.release(conn);//返还conn回连接池
 
-		}
+					for (Blogger taskObj : sourceList) {
+						//设置任务对象属性
+						List<Task> taskList = setTasks(taskObj);
+						//分配任务
+						//assignTasks(taskList);
+						assignTasksTestNotNullJedis(taskList);
+					}
+					//任务分配完成后，呼叫GC清空一下sourceList里面的对象
+					sourceList.clear();
+					System.out.println("sourceList is empty: " + sourceList.isEmpty());
+
+					//线程沉睡30分钟
+					//					Thread.sleep(1800000);
+					Thread.sleep(600000);//10分钟
+				} catch (Exception e) {
+					e.printStackTrace();
+					//logger
+				}
+			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		} 
+//		finally {
+//			if (pool != null) {
+//				pool.closePool();
+//			}
+//		}
+
+
 	}
 
 	/**
@@ -159,6 +163,7 @@ public class Producer implements Producable {
 		/*int m = 10;*/ //假设的总任务数
 		Blogger blogger = (Blogger)obj;
 		int m = processSum(blogger.getTransmits()); //暂时先用这个数值
+		//		int m = processSum(30); //暂时先用这个数值
 		List<Task> list = new ArrayList<>();
 		for(int i = 1; i <= m; i ++){
 			Task task = new Task();
@@ -211,5 +216,5 @@ public class Producer implements Producable {
 	private int processSum(int m){
 		return (m%20 == 0) ? m/20 : (m/20+1);
 	}
-	
+
 }

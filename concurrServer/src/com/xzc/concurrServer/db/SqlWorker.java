@@ -8,10 +8,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.xzc.concurr.pojo.BaseAnalysis;
 import com.xzc.concurr.pojo.BaseAnalysisPojo;
 import com.xzc.concurr.pojo.Blogger;
+import com.xzc.concurr.pojo.Result;
 import com.xzc.concurr.pojo.TransmitDetail;
+import com.xzc.concurr.pojo.Transmitstatistics;
+import com.xzc.concurrServer.util.CollectUtil;
 import com.xzc.concurrServer.util.JDBCUtil;
+import com.xzc.concurrServer.util.SqlConfig;
 
 public class SqlWorker {
 
@@ -52,22 +57,23 @@ public class SqlWorker {
 				ps1.executeUpdate();*/
 				System.out.println("got a BlogID :--" + new Date());
 			}
-			
+
 			/**
 			 * 测试
 			 */
-//			ps1 = conn.prepareStatement("update urun_opinion_gz_blog.weibo set STATUS = 3 where weibo.BlogID = '4021790348672058';");
-//			ps1.executeUpdate();
-//			
-//			ps2 = conn.prepareStatement("update urun_opinion_gz_blog.weibo set STATUS = 0 where weibo.BlogID = '3374583573236496'");
-//			ps2.executeUpdate();
-			
+			//			ps1 = conn.prepareStatement("update urun_opinion_gz_blog.weibo set STATUS = 3 where weibo.BlogID = '4021790348672058';");
+			//			ps1.executeUpdate();
+			//			
+			//			ps2 = conn.prepareStatement("update urun_opinion_gz_blog.weibo set STATUS = 0 where weibo.BlogID = '3374583573236496'");
+			//			ps2.executeUpdate();
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			JDBCUtil.close(ps0, rs);
 			JDBCUtil.close(ps0, ps1, ps2, rs);
-			
+			System.out.println("connected one time " + new Date());
+
 		}
 		return list;
 	}
@@ -250,6 +256,218 @@ public class SqlWorker {
 		}
 		return 1;
 	}
+
+
+
+
+	/**
+	 * 测试方法，结果对线入库
+	 * @param result
+	 */
+	public static void saveResult(Result result){
+		Connection conn = null;
+		try {
+			conn = JDBCUtil.getMySQLConnection(SqlConfig.url);
+			BaseAnalysis localBa = result.getBaseAnalysis();
+			ArrayList<TransmitDetail> finalTds = result.getTransmitDetails();
+			//入库处理
+			List<BaseAnalysisPojo> list = CollectUtil.toBaseAnalysisPojoList(localBa);
+			conn = JDBCUtil.getMySQLConnection(SqlConfig.url);
+			SaveBaseAnalysisListTest(conn, list);
+			saveTransDetailList(conn, finalTds);
+			
+			
+			/**
+			 * 保存transmitDetialstatis
+			 */
+			List<Transmitstatistics> transmitstaList = new ArrayList<>();
+			for(int i = 1; i < 6; i ++){
+				transmitstaList.addAll(
+						findForStatistics(result.getResultId(), i, conn));
+			}
+			saveTransmitStasticsList(transmitstaList, conn);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			JDBCUtil.close(conn);
+		}
+
+	}
+
+
+
+
+	/**
+	 * 按层级查出来，放到list中
+	 * @param AnalysisBlogID
+	 * @param levelId
+	 * @param connection
+	 * @return
+	 */
+	public static List<Transmitstatistics> findForStatistics (
+			String AnalysisBlogID, int levelId, Connection connection) {
+
+		List<Transmitstatistics> list = new ArrayList<Transmitstatistics>();
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			ps = connection
+					.prepareStatement("select AnalysisBlogID,LevelID, SUM(Transmits)+1 Transtmis,SUM(Fans) Covers from `urun_opinion_gz_blog`.`transmitdetail_copy`"
+							+ " where LevelID=" + levelId + " and AnalysisBlogID=" + AnalysisBlogID);
+			rs = ps.executeQuery();
+			while(rs.next()) {
+				Transmitstatistics ts = new Transmitstatistics();
+				if (rs.getString("AnalysisBlogID") != null) {
+					ts.setAnalysisBlogId(rs.getString("AnalysisBlogID"));
+					ts.setLevelID(rs.getInt("LevelID"));
+					ts.setTransmits(rs.getInt("Transtmis"));;
+					ts.setCovers(rs.getInt("Covers"));
+					list.add(ts);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			JDBCUtil.close(ps, rs);
+		}
+		return list;
+	}
+
+
+/*	public static List<Transmitstatistics> findForStatistics (
+			Connection conn, List<Transmitstatistics> list) {
+
+		PreparedStatement ps = null;
+		try {
+			ps = connection
+					.prepareStatement("select AnalysisBlogID,LevelID, SUM(Transmits)+1 Transtmis,SUM(Fans) Covers from transmitdetail where LevelID=" + levelId + " and AnalysisBlogID=" + AnalysisBlogID);
+			rs = ps.executeQuery();
+			while(rs.next()) {
+				Transmitstatistics ts = new Transmitstatistics();
+				if (rs.getString("AnalysisBlogID") != null) {
+					ts.setAnalysisBlogId(rs.getString("AnalysisBlogID"));
+					ts.setLevelID(rs.getInt("LevelID"));
+					ts.setTransmits(rs.getInt("Transtmis"));;
+					ts.setCovers(rs.getInt("Covers"));
+					list.add(ts);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			JDBCUtil.close(ps, rs);
+		}
+		return list;
+	}*/
+	
+	
+	
+	
+	@SuppressWarnings("resource")
+	public static int saveTransmitStasticsList (List<Transmitstatistics> list, Connection connection) {
+
+		PreparedStatement ps = null;
+		ResultSet resultSet = null;
+		String tempAnalysisBlogId = "";
+		try {
+			for(Transmitstatistics tsl : list) {
+				try{
+					ps = connection
+							.prepareStatement("select * from `urun_opinion_gz_blog`.`transmitstatistics_copy`"
+									+ " where AnalysisBlogID=? and LevelID=?");
+					ps.setObject(1, tsl.getAnalysisBlogId());
+					ps.setObject(2, tsl.getLevelID());
+					resultSet = ps.executeQuery();
+					if (!resultSet.next()) {
+						ps = null;
+						ps = connection
+								.prepareStatement("insert into `urun_opinion_gz_blog`.`transmitstatistics_copy`"
+										+ " (AnalysisBlogID,LevelID,Transtmis,Covers)"
+										+ " values (?,?,?,?)");
+						ps.setObject(1, tsl.getAnalysisBlogId());
+						ps.setObject(2, tsl.getLevelID());
+						ps.setObject(3, tsl.getTransmits());
+						ps.setObject(4, tsl.getCovers());
+						ps.executeUpdate();
+						tempAnalysisBlogId = tsl.getAnalysisBlogId();
+						System.out.println("i am right here do this stuff ON ANALYSISI");
+					}
+				} catch(Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			//set weibo.Status = 2
+			setWeiboStatus(tempAnalysisBlogId,connection);
+			return 1;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if(connection == null)
+				return 0;
+			else
+				return 1;
+		} finally {
+			try {
+				if(resultSet != null)
+					resultSet.close();
+				if (ps != null) {
+					ps.close();
+				}
+
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				resultSet = null;
+				ps = null;
+			}
+			//			con.closeConnection();
+		}
+	}
+	
+	
+	
+	public static int setWeiboStatus (String analysisBlogId, Connection connection) {
+
+		PreparedStatement ps = null;
+		ResultSet resultSet = null;
+
+		try {
+			try {
+				ps = null;
+				ps = connection.prepareStatement("update `urun_opinion_gz_blog`.`weibo_copy` set Status=2 where BlogID=?");
+				ps.setObject(1, analysisBlogId);
+				ps.executeUpdate();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return 1;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if(connection == null)
+				return 0;
+			else
+				return 1;
+		} finally {
+			try {
+				if(resultSet != null)
+					resultSet.close();
+				if (ps != null) {
+					ps.close();
+				}
+
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				resultSet = null;
+				ps = null;
+			}
+			//			con.closeConnection();
+		}
+	}
+
+
 
 }
 
