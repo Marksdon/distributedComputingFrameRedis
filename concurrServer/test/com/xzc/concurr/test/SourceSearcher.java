@@ -35,7 +35,9 @@ public class SourceSearcher {
 		String url = "https://api.weibo.com/2/statuses/show_batch.json?"
 				+ "source=211160679&ids=%s";
 		int j = 0;
-
+		
+		TransmitDetail transmitdetail = new TransmitDetail();
+		transmitdetail.setAnalysisBlogId(id);
 		while (true) {
 
 			String uurl = String.format(url, id);
@@ -74,7 +76,8 @@ public class SourceSearcher {
 			 */
 			//			return jsonObject.getInt("reposts_count");
 
-			TransmitDetail transmitdetail = new TransmitDetail();
+			 transmitdetail = new TransmitDetail();
+			
 			try {
 				try {
 
@@ -178,7 +181,12 @@ public class SourceSearcher {
 			}
 			return transmitdetail;
 		} else {
-			return null;
+			
+			TransmitDetail td = new TransmitDetail();
+			td.setAnalysisBlogId(id);
+			td.setLevelId(0);
+			td.setUid("0000000000");
+			return td;
 		}
 	}
 

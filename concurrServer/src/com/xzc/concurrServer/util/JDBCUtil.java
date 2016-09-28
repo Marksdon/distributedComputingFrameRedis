@@ -41,8 +41,8 @@ public class JDBCUtil {
 		}
 		return null;
 	}
-	
-	
+
+
 	/**
 	 * 获取MySQL的连接，如果获取不成功将将连续获取10次
 	 * @return MySQL数据库连接connection
@@ -100,7 +100,7 @@ public class JDBCUtil {
 			}
 		}
 	}
-	
+
 	/**
 	 * 关闭一个数据会话
 	 * @param ps 数据库会话
@@ -143,9 +143,9 @@ public class JDBCUtil {
 		}
 
 	}
-	
-	
-	
+
+
+
 	/**
 	 * 关闭一个数据库会话 preparedStatement ，一个结果集
 	 * @param ps 数据库会话
@@ -172,8 +172,8 @@ public class JDBCUtil {
 		}
 
 	}
-	
-	
+
+
 	/**
 	 * 关闭两个数据库会话，一个结果集
 	 * @param ps0 数据库会话
@@ -211,7 +211,7 @@ public class JDBCUtil {
 
 	}
 
-	
+
 	public static void close(PreparedStatement ps0, PreparedStatement ps1,
 			PreparedStatement ps2, ResultSet rs) {
 		if (rs != null) {
@@ -252,9 +252,9 @@ public class JDBCUtil {
 		}
 
 	}
-	
-	
-	
+
+
+
 	/**
 	 * 关闭四个数据库会话，一个结果集
 	 * @param ps0 数据库会话
@@ -265,7 +265,7 @@ public class JDBCUtil {
 	 * @param rs 结果集
 	 */
 	public static void close(PreparedStatement ps0, PreparedStatement ps1,
-			PreparedStatement ps2, PreparedStatement ps3, PreparedStatement ps4, ResultSet rs) {
+			PreparedStatement ps2, PreparedStatement ps3, ResultSet rs) {
 		if (rs != null) {
 			try {
 				rs.close();
@@ -311,18 +311,9 @@ public class JDBCUtil {
 				ps3 = null;
 			}
 		}
-		if (ps4 != null) {
-			try {
-				ps4.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} finally {
-				ps4 = null;
-			}
-		}
 
 	}
-	
+
 
 	/**
 	 * 关闭两个数据库会话

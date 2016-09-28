@@ -20,9 +20,6 @@ import com.xzc.concurrServer.util.SqlConfig;
 
 public class SqlWorker {
 
-	//getDataSource()
-	//saveReuslt()
-
 	/**
 	 * 获取数据库的源数据
 	 * @param conn 数据库连接
@@ -30,13 +27,11 @@ public class SqlWorker {
 	 */
 	public static List<Blogger> getDateSource(Connection conn) {
 
-		//		String sql = "SELECT `BlogID`,`UID`,`Transmits` FROM `weibo` WHERE `Status` = 0";
 		String sql = "SELECT `BlogID`,`UID`,`Transmits` "
 				+ "FROM `urun_opinion_gz_blog`.`weibo` WHERE `Status` = 0 limit 5";
 
 		PreparedStatement ps0 = null;
 		PreparedStatement ps1 = null;
-		PreparedStatement ps2 = null;
 		ResultSet rs = null;
 		List<Blogger> list = new ArrayList<>();
 		try {
@@ -52,27 +47,17 @@ public class SqlWorker {
 				blogger.setUid(uid);
 				blogger.setTransmits(transmits);
 				list.add(blogger);
-				/*ps1 = conn.prepareStatement("update weibo set Status=1 where BlogID=?");
+				ps1 = conn.prepareStatement("update weibo set Status=1 where BlogID=?");
 				ps1.setObject(1, blogId);
-				ps1.executeUpdate();*/
-				System.out.println("got a BlogID :--" + new Date());
+				ps1.executeUpdate();
+				System.out.println("got a BlogID "+blogId+":--" + new Date());
 			}
-
-			/**
-			 * 测试
-			 */
-			//			ps1 = conn.prepareStatement("update urun_opinion_gz_blog.weibo set STATUS = 3 where weibo.BlogID = '4021790348672058';");
-			//			ps1.executeUpdate();
-			//			
-			//			ps2 = conn.prepareStatement("update urun_opinion_gz_blog.weibo set STATUS = 0 where weibo.BlogID = '3374583573236496'");
-			//			ps2.executeUpdate();
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			JDBCUtil.close(ps0, rs);
-			JDBCUtil.close(ps0, ps1, ps2, rs);
-			System.out.println("connected one time " + new Date());
+			JDBCUtil.close(ps0, ps1, rs);
+			System.out.println("获取数据源------ " + new Date());
 
 		}
 		return list;
@@ -92,9 +77,7 @@ public class SqlWorker {
 		PreparedStatement ps1 = null;
 		PreparedStatement ps2 = null;
 		PreparedStatement ps3 = null;
-		PreparedStatement ps4 = null;
 		ResultSet rs = null;
-		String flagId = null;
 		try {
 			for(BaseAnalysisPojo baseAnalysis : list) {
 
@@ -118,7 +101,6 @@ public class SqlWorker {
 							ps1.setObject(7, baseAnalysis.getDate());
 							ps1.setObject(8, baseAnalysis.getDateTime());
 							ps1.executeUpdate();
-							flagId = baseAnalysis.getOutId();
 						} catch (Exception e) {
 							e.printStackTrace();
 							System.out.println("=|=|=|=抛出异常catch到的： " + baseAnalysis.getName());
@@ -150,14 +132,12 @@ public class SqlWorker {
 
 			ps3 = conn.prepareStatement("update baseanalysis_copy,face set baseanalysis_copy.Code = face.ID where baseanalysis_copy.Name = face.Phrase");
 			ps3.executeUpdate();
-			ps4 = conn.prepareStatement("update weibo set Status=0 where BlogID=?");
-			ps4.setObject(1, flagId);
-			ps4.executeUpdate();
+
 			System.out.println("完成入库");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			JDBCUtil.close(ps0, ps1, ps2, ps3, ps4,rs);
+			JDBCUtil.close(ps0, ps1, ps2, ps3, rs);
 
 		}
 	}
@@ -176,14 +156,12 @@ public class SqlWorker {
 		PreparedStatement ps1 = null;
 		PreparedStatement ps2 = null;
 		PreparedStatement ps3 = null;
-		PreparedStatement ps4 = null;
 		ResultSet rs = null;
-		String flagId = null;
 		try {
 			for(BaseAnalysisPojo baseAnalysis : list) {
 				try{
 
-					ps1 = conn.prepareStatement("insert into baseanalysis_copy (OutID,TypeID,AnalysisType,Name,Count,Code,Date,Time) values (?,?,?,?,?,?,?,?) ");
+					ps1 = conn.prepareStatement("insert into baseanalysis (OutID,TypeID,AnalysisType,Name,Count,Code,Date,Time) values (?,?,?,?,?,?,?,?) ");
 					ps1.setObject(1, baseAnalysis.getOutId());
 					ps1.setObject(2, baseAnalysis.getTypeId());
 					ps1.setObject(3, baseAnalysis.getAnalysisType());
@@ -193,7 +171,6 @@ public class SqlWorker {
 					ps1.setObject(7, baseAnalysis.getDate());
 					ps1.setObject(8, baseAnalysis.getDateTime());
 					ps1.executeUpdate();
-					flagId = baseAnalysis.getOutId();
 				} catch (Exception e) {
 					e.printStackTrace();
 					System.out.println("=|=|=|=抛出异常catch到的： " + baseAnalysis.getName());
@@ -201,17 +178,15 @@ public class SqlWorker {
 					System.out.println("|||----after abs:" + baseAnalysis.getName());
 				}
 			} 
-			ps3 = conn.prepareStatement("update baseanalysis_copy,face set baseanalysis_copy.Code = face.ID where baseanalysis_copy.Name = face.Phrase");
+			ps3 = conn.prepareStatement("update baseanalysis,face set baseanalysis.Code = face.ID where baseanalysis.Name = face.Phrase");
 			ps3.executeUpdate();
-			ps4 = conn.prepareStatement("update weibo set Status=0 where BlogID=?");
-			ps4.setObject(1, flagId);
-			ps4.executeUpdate();
+
 			System.out.println("完成入库");
 
 		} catch(Exception ex){
 			ex.printStackTrace();
 		} finally {
-			JDBCUtil.close(ps0, ps1, ps2, ps3, ps4,rs);
+			JDBCUtil.close(ps0, ps1, ps2, ps3,rs);
 
 		}
 
@@ -226,7 +201,7 @@ public class SqlWorker {
 			for(TransmitDetail td : list) {
 				try {
 
-					ps = conn.prepareStatement("insert into transmitdetail_copy"
+					ps = conn.prepareStatement("insert into transmitdetail"
 							+ " (AnalysisBlogID,LevelID,UID,Name,HeadUrl,Url,Transmits,Province,City,Posts,Fans,FromUID,BlogID,Comments,Content,Time)"
 							+ " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 					ps.setObject(1, td.getAnalysisBlogId());
@@ -259,7 +234,6 @@ public class SqlWorker {
 
 
 
-
 	/**
 	 * 测试方法，结果对线入库
 	 * @param result
@@ -267,16 +241,15 @@ public class SqlWorker {
 	public static void saveResult(Result result){
 		Connection conn = null;
 		try {
-			conn = JDBCUtil.getMySQLConnection(SqlConfig.url);
+			conn = JDBCUtil.getMySQLConnection(SqlConfig.myLocalUrl);
 			BaseAnalysis localBa = result.getBaseAnalysis();
 			ArrayList<TransmitDetail> finalTds = result.getTransmitDetails();
 			//入库处理
 			List<BaseAnalysisPojo> list = CollectUtil.toBaseAnalysisPojoList(localBa);
-			conn = JDBCUtil.getMySQLConnection(SqlConfig.url);
 			SaveBaseAnalysisListTest(conn, list);
 			saveTransDetailList(conn, finalTds);
-			
-			
+
+
 			/**
 			 * 保存transmitDetialstatis
 			 */
@@ -286,7 +259,7 @@ public class SqlWorker {
 						findForStatistics(result.getResultId(), i, conn));
 			}
 			saveTransmitStasticsList(transmitstaList, conn);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -313,7 +286,10 @@ public class SqlWorker {
 		ResultSet rs = null;
 		try {
 			ps = connection
-					.prepareStatement("select AnalysisBlogID,LevelID, SUM(Transmits)+1 Transtmis,SUM(Fans) Covers from `urun_opinion_gz_blog`.`transmitdetail_copy`"
+					.prepareStatement("select AnalysisBlogID,LevelID, SUM(Transmits)+1 Transtmis,SUM(Fans) Covers from `urun_opinion_gz_blog`.`transmitdetail`"
+							+ " where LevelID=" + levelId + " and AnalysisBlogID=" + AnalysisBlogID);
+			
+			System.out.println("select AnalysisBlogID,LevelID, SUM(Transmits)+1 Transtmis,SUM(Fans) Covers from `urun_opinion_gz_blog`.`transmitdetail`"
 							+ " where LevelID=" + levelId + " and AnalysisBlogID=" + AnalysisBlogID);
 			rs = ps.executeQuery();
 			while(rs.next()) {
@@ -336,36 +312,6 @@ public class SqlWorker {
 	}
 
 
-/*	public static List<Transmitstatistics> findForStatistics (
-			Connection conn, List<Transmitstatistics> list) {
-
-		PreparedStatement ps = null;
-		try {
-			ps = connection
-					.prepareStatement("select AnalysisBlogID,LevelID, SUM(Transmits)+1 Transtmis,SUM(Fans) Covers from transmitdetail where LevelID=" + levelId + " and AnalysisBlogID=" + AnalysisBlogID);
-			rs = ps.executeQuery();
-			while(rs.next()) {
-				Transmitstatistics ts = new Transmitstatistics();
-				if (rs.getString("AnalysisBlogID") != null) {
-					ts.setAnalysisBlogId(rs.getString("AnalysisBlogID"));
-					ts.setLevelID(rs.getInt("LevelID"));
-					ts.setTransmits(rs.getInt("Transtmis"));;
-					ts.setCovers(rs.getInt("Covers"));
-					list.add(ts);
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			JDBCUtil.close(ps, rs);
-		}
-		return list;
-	}*/
-	
-	
-	
-	
 	@SuppressWarnings("resource")
 	public static int saveTransmitStasticsList (List<Transmitstatistics> list, Connection connection) {
 
@@ -376,7 +322,7 @@ public class SqlWorker {
 			for(Transmitstatistics tsl : list) {
 				try{
 					ps = connection
-							.prepareStatement("select * from `urun_opinion_gz_blog`.`transmitstatistics_copy`"
+							.prepareStatement("select * from `urun_opinion_gz_blog`.`transmitstatistics`"
 									+ " where AnalysisBlogID=? and LevelID=?");
 					ps.setObject(1, tsl.getAnalysisBlogId());
 					ps.setObject(2, tsl.getLevelID());
@@ -384,7 +330,7 @@ public class SqlWorker {
 					if (!resultSet.next()) {
 						ps = null;
 						ps = connection
-								.prepareStatement("insert into `urun_opinion_gz_blog`.`transmitstatistics_copy`"
+								.prepareStatement("insert into `urun_opinion_gz_blog`.`transmitstatistics`"
 										+ " (AnalysisBlogID,LevelID,Transtmis,Covers)"
 										+ " values (?,?,?,?)");
 						ps.setObject(1, tsl.getAnalysisBlogId());
@@ -425,9 +371,9 @@ public class SqlWorker {
 			//			con.closeConnection();
 		}
 	}
-	
-	
-	
+
+
+
 	public static int setWeiboStatus (String analysisBlogId, Connection connection) {
 
 		PreparedStatement ps = null;
@@ -436,7 +382,7 @@ public class SqlWorker {
 		try {
 			try {
 				ps = null;
-				ps = connection.prepareStatement("update `urun_opinion_gz_blog`.`weibo_copy` set Status=2 where BlogID=?");
+				ps = connection.prepareStatement("update `urun_opinion_gz_blog`.`weibo` set Status=2 where BlogID=?");
 				ps.setObject(1, analysisBlogId);
 				ps.executeUpdate();
 			} catch (Exception e) {

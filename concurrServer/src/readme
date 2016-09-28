@@ -25,7 +25,6 @@
 	private Map<String,Integer> userFansMap;---------------------[done]
 	
 	
-	
 baseAnalysis变成list准备持久化
 	private String outId;      //一样
 	private int typeId;        //一样
@@ -36,9 +35,60 @@ baseAnalysis变成list准备持久化
 	private Date date;        //一样
 	private Timestamp dateTime;//一样
 	
-	
-Q1.源头
-Q2.统计表
-Q3.结果池
+Q1.源头--------------[done]
+Q2.统计表-------------[done]
+Q3.结果池-------------[done]
+
+
+
+
+
+
+
+
+1.层数，随机
+2.数据库连接失败
+3.内存优化
+4.代码优化
+
+
+测试：
+服务器上测试
+
+
+数据库的表已经不用copy表
+要换就换库
+
+
+一个页的时候，入库不成功---[done]
+
+下载sourceTd，可能为空，要考虑初始化-----[]
+
+
+com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException: Column 'Content' cannot be null
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:931)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:2991)
+	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:1637)
+	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:1729)
+	at com.mysql.jdbc.Connection.execSQL(Connection.java:3283)
+	at com.mysql.jdbc.PreparedStatement.executeInternal(PreparedStatement.java:1332)
+	at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:1604)
+	at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:1519)
+	at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:1504)
+	at com.xzc.concurrServer.db.SqlWorker.saveTransDetailList(SqlWorker.java:223)
+	at com.xzc.concurrServer.db.SqlWorker.saveResult(SqlWorker.java:250)
+	at com.xzc.concurr.result.ResultCumulatePool.testContain(ResultCumulatePool.java:177)
+	at com.xzc.concurrServer.men.Boss.run(Boss.java:34)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+
+
+
+
+
+
+
+
 	
 	

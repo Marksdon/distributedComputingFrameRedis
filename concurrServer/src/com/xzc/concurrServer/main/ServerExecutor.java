@@ -12,7 +12,6 @@ import com.xzc.concurrServer.men.Producer;
  *
  */
 public class ServerExecutor {
-	
 	public static void main(String[] args) {
 		ServerExecutor executor = new ServerExecutor();
 		executor.startup();

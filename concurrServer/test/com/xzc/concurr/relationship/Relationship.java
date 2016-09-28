@@ -48,6 +48,10 @@ public class Relationship {
 
 		BlockingQueue<TransmitDetail> queue = new LinkedBlockingQueue<>();
 //		sourceTd.setName("源头");
+		if (sourceTd == null) {
+			sourceTd = new TransmitDetail();
+			sourceTd.setUid("00000000");
+		}
 		sourceTd.setLevelId(0);
 		fianlList.add(sourceTd);
 		

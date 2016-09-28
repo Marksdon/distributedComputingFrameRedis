@@ -142,6 +142,8 @@ public class ResultCumulatePool {
 
 		if ((registor = rc.collecteResult(result)) != null) {//该项计算完成
 			if (!map.containsKey(resultId)) {
+				localResult = new Result();
+				localResult.setResultId(registor.getResultId());
 				localBa = new BaseAnalysis();
 				localTd = new ArrayList<>();
 				BaseAnalysis ba = result.getBaseAnalysis();

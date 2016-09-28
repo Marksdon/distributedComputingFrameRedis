@@ -16,22 +16,20 @@ import com.xzc.concurrServer.util.SerializeUtil;
 
 import redis.clients.jedis.Jedis;
 
-
 public class Producer implements Producable {
 
 	private static AtomicInteger count = new AtomicInteger();
 
 	@Override
 	public void run(){
-
 		System.out.println("count's initial value : " + count.intValue());
 		ConnectionPool pool = null;
-//		try {
-			//初始化连接池
-//			pool =  ConnectionPool.getInstance();
-//			if (pool == null) {
-//				System.out.println("pool == null");
-//			}
+		try {
+			/*初始化连接池*/
+			pool =  ConnectionPool.getInstance();
+			if (pool == null) {
+				System.out.println("pool == null");
+			}
 			while (true) {
 				try {
 					Connection conn = pool.getConnection();
@@ -48,29 +46,27 @@ public class Producer implements Producable {
 						//设置任务对象属性
 						List<Task> taskList = setTasks(taskObj);
 						//分配任务
-						//assignTasks(taskList);
 						assignTasksTestNotNullJedis(taskList);
 					}
+					
 					//任务分配完成后，呼叫GC清空一下sourceList里面的对象
 					sourceList.clear();
 					System.out.println("sourceList is empty: " + sourceList.isEmpty());
 
-					//线程沉睡30分钟
-					//					Thread.sleep(1800000);
-					Thread.sleep(600000);//10分钟
+					//线程沉睡10秒
+					Thread.sleep(10000);
 				} catch (Exception e) {
 					e.printStackTrace();
 					//logger
 				}
 			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		} 
-//		finally {
-//			if (pool != null) {
-//				pool.closePool();
-//			}
-//		}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (pool != null) {
+				pool.closePool();
+			}
+		}
 
 
 	}
@@ -163,7 +159,6 @@ public class Producer implements Producable {
 		/*int m = 10;*/ //假设的总任务数
 		Blogger blogger = (Blogger)obj;
 		int m = processSum(blogger.getTransmits()); //暂时先用这个数值
-		//		int m = processSum(30); //暂时先用这个数值
 		List<Task> list = new ArrayList<>();
 		for(int i = 1; i <= m; i ++){
 			Task task = new Task();
