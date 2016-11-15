@@ -241,7 +241,7 @@ public class SqlWorker {
 	public static void saveResult(Result result){
 		Connection conn = null;
 		try {
-			conn = JDBCUtil.getMySQLConnection(SqlConfig.myLocalUrl);
+			conn = JDBCUtil.getMySQLConnection(SqlConfig.localUrl);
 			BaseAnalysis localBa = result.getBaseAnalysis();
 			ArrayList<TransmitDetail> finalTds = result.getTransmitDetails();
 			//入库处理

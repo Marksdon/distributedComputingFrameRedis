@@ -2,7 +2,7 @@ package com.xzc.concurr.pojo;
 
 import java.io.Serializable;
 
-public class Task implements Serializable{
+public class Task<T> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	private Object obj; //任务对象

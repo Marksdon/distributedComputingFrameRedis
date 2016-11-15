@@ -30,7 +30,8 @@ public class Consumer implements Runnable{
 		while (true) {
 			try {
 				jedis = RedisUtilSyn.getJedis(1);
-				byte[] bArr = jedis.lpop("taskQueueTest".getBytes());
+//				byte[] bArr = jedis.lpop("taskQueueTest".getBytes());
+				byte[] bArr = jedis.lpop("taskQueueLocalTest".getBytes());
 				
 				if (bArr == null) {
 					//暂停2秒
@@ -42,7 +43,8 @@ public class Consumer implements Runnable{
 					//计算任务
 					result = countTask(task);
 					//计算结果进入队列
-					jedis.rpush("resultQueueTest".getBytes(),
+//					jedis.rpush("resultQueueTest".getBytes(),
+					jedis.rpush("resultQueueLocalTest".getBytes(),
 							SerializeUtil.serialize(result));
 					System.out.println("rpush one: " + result.getiResult());
 				}
@@ -106,6 +108,7 @@ public class Consumer implements Runnable{
 			//用户系列,用户级别
 			String user = jb.getString("user");
 			result = CountUtil.countUserSerial(user, result, td);
+			
 			//TransmitDetail对象数据并没有完全封装
 		}
 		result.getBaseAnalysis().setTranCom(tranComMap);

@@ -146,7 +146,7 @@ public class CountUtil {
 		//设置TransmitDetail对象analysisBlogId属性
 		td.setAnalysisBlogId(result.getResultId());
 		td.setFromUid(result.getResultId());//暂时设定为源微博
-
+		td = setTransmitDetailUrl(td);  //封装url属性数据
 		//计算地区
 		areaMap = parseArea(userJson, areaMap);
 		//计算用户类型	
@@ -302,7 +302,6 @@ public class CountUtil {
 		TransmitDetail td = new TransmitDetail();
 		td.setBlogId(jb.getString("idstr"));
 		td.setLevelId(1);  //层次暂时定位1
-		td = setTransmitDetailUrl(td);  //封装url属性数据
 		td.setTransmits(jb.getInt("reposts_count"));
 		td.setComments(jb.getInt("comments_count"));
 		td.setContent(text);

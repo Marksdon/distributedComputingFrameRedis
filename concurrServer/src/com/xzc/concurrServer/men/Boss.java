@@ -25,7 +25,8 @@ public class Boss implements Runnable {
 		while (true) {
 			try {
 				jedis = RedisUtilSyn.getJedis(1);
-				byte[] bArr = jedis.lpop("resultQueueTest".getBytes());
+//				byte[] bArr = jedis.lpop("resultQueueTest".getBytes());
+				byte[] bArr = jedis.lpop("resultQueueLocalTest".getBytes());
 				if (bArr == null) {
 					System.err.println("bArr == null");
 					ThreadUtil.slowThread();

@@ -113,7 +113,8 @@ public class Producer implements Producable {
 		try {
 			for (Task task : taskList) {
 				try {
-					jedis.rpush("taskQueueTest".getBytes(),
+//					jedis.rpush("taskQueueTest".getBytes(),
+					jedis.rpush("taskQueueLocalTest".getBytes(),
 							SerializeUtil.serialize(task));
 					System.out.println("produce task: " + task.getiTask());
 					count.incrementAndGet();

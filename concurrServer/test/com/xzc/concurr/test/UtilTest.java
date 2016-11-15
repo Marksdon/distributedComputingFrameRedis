@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -25,6 +27,7 @@ public class UtilTest {
 	}
 	
 	/**
+	 * @Description
 	 * Map<String,Integer>类型的map按照value获取数值最大的topX个元素
 	 * @param map 需要截取的map
 	 * @param topX 截取的元素个数
@@ -59,6 +62,11 @@ public class UtilTest {
 	
 
 	
+	public static void testList() {
+		List<Object> list = new ArrayList<>(100);
+		new ArrayList<>(new ArrayList<>());
+		new ArrayList<>();
+	}
 	
 }	
 
